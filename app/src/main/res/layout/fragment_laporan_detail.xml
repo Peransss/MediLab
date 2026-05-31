@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView android:id="@+id/tvLaporanId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
+
+        <TextView android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView android:text="Data Pasien"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvPasien" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <TextView android:text="Dokter Rujukan"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvDokter" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <TextView android:text="Hasil Pemeriksaan"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvHasil" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <TextView android:text="Diagnosa"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvDiagnosa" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <TextView android:text="Resep Obat"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvResep" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <TextView android:text="Info RS"
+            android:textStyle="bold" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvRS" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginBottom="16dp"/>
+    </LinearLayout>
+</ScrollView>
