@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal">
+
+    <ImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@mipmap/ic_launcher"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView android:id="@+id/tvNama" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:textStyle="bold" android:textSize="18sp"/>
+    <TextView android:id="@+id/tvId" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:textSize="12sp"/>
+    <TextView android:id="@+id/tvRm" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:textSize="12sp"/>
+    <TextView android:id="@+id/tvEmail" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_marginBottom="24dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEditProfil"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Edit Profil"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGantiPassword"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Ganti Password"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_marginTop="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="KELUAR"
+        android:layout_marginTop="24dp"/>
+</LinearLayout>
