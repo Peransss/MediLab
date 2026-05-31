@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_patient"
+    app:startDestination="@id/patientDashboardFragment">
+
+    <fragment android:id="@+id/patientDashboardFragment"
+        android:name="com.example.medilab.patient.dashboard.PatientDashboardFragment"
+        android:label="Dashboard" />
+
+    <fragment android:id="@+id/hasilFragment"
+        android:name="com.example.medilab.patient.hasil.HasilFragment"
+        android:label="Hasil Pemeriksaan" />
+
+    <fragment android:id="@+id/riwayatFragment"
+        android:name="com.example.medilab.patient.riwayat.RiwayatFragment"
+        android:label="Riwayat Rekam Medis" />
+
+    <fragment android:id="@+id/patientProfileFragment"
+        android:name="com.example.medilab.patient.profile.PatientProfileFragment"
+        android:label="Profile" />
+</navigation>

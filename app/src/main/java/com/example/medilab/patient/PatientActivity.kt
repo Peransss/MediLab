@@ -2,6 +2,9 @@ package com.example.medilab.patient
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
+import com.example.medilab.R
 import com.example.medilab.databinding.ActivityPatientBinding
 
 class PatientActivity : AppCompatActivity() {
@@ -11,5 +14,8 @@ class PatientActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPatientBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        binding.bottomNav.setupWithNavController(navController)
     }
 }
