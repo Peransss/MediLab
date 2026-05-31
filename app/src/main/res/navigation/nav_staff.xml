@@ -9,7 +9,7 @@
         android:label="Dashboard" />
 
     <fragment android:id="@+id/managePasienFragment"
-        android:name="com.example.medilab.staff.manage.pasien.ManagePasienFragment"
+        android:name="com.example.medilab.staff.manage.ManageContainerFragment"
         android:label="Manage" />
 
     <fragment android:id="@+id/laporanListFragment"
