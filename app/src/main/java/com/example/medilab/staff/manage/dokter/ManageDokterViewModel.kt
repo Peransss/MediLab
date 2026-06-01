@@ -12,8 +12,19 @@ class ManageDokterViewModel : ViewModel() {
     private val _dokterList = MutableLiveData<List<Dokter>>()
     val dokterList: LiveData<List<Dokter>> = _dokterList
 
+    private val _allDokter = mutableListOf<Dokter>()
+
     fun load() {
-        repo.getAll { _dokterList.value = it }
+        repo.getAll { list ->
+            _allDokter.clear()
+            _allDokter.addAll(list)
+            _dokterList.value = list
+        }
+    }
+
+    fun search(query: String) {
+        _dokterList.value = if (query.isBlank()) _allDokter
+        else _allDokter.filter { it.nama.contains(query, ignoreCase = true) || it.id.contains(query, ignoreCase = true) }
     }
 
     fun delete(id: String) {

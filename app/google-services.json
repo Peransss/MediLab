@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "medilab-placeholder",
-    "storage_bucket": "medilab-placeholder.appspot.com"
+    "project_number": "114318976538",
+    "project_id": "medilab-46be4",
+    "storage_bucket": "medilab-46be4.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:114318976538:android:80a368fa6652aceec553a3",
         "android_client_info": {
           "package_name": "com.example.medilab"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "PLACEHOLDER_API_KEY"
+          "current_key": "AIzaSyAm6SaO-PHDuM77c9-7nEz-FGJDPp_fiMo"
         }
       ],
       "services": {

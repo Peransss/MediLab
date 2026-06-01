@@ -24,6 +24,10 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
 
+        authViewModel.passwordResetResult.observe(this) { (success, msg) ->
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+
         authViewModel.loginRole.observe(this) { role ->
             navigateToRole(role)
         }
@@ -62,7 +66,10 @@ class LoginActivity : AppCompatActivity() {
             Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS -> {
                 startActivity(Intent(this, StaffActivity::class.java))
             }
-            Constants.ROLE_DOKTER, Constants.ROLE_PASIEN -> {
+            Constants.ROLE_DOKTER -> {
+                startActivity(Intent(this, StaffActivity::class.java))
+            }
+            Constants.ROLE_PASIEN -> {
                 startActivity(Intent(this, PatientActivity::class.java))
             }
         }

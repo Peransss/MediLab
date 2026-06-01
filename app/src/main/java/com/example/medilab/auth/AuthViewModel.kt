@@ -17,6 +17,9 @@ class AuthViewModel : ViewModel() {
     private val _loginRole = MutableLiveData<String>()
     val loginRole: LiveData<String> = _loginRole
 
+    private val _passwordResetResult = MutableLiveData<Pair<Boolean, String>>()
+    val passwordResetResult: LiveData<Pair<Boolean, String>> = _passwordResetResult
+
     fun login(email: String, password: String) {
         authRepo.login(email, password) { success, msg, role ->
             _loginResult.value = Pair(success, msg)
@@ -32,7 +35,7 @@ class AuthViewModel : ViewModel() {
 
     fun sendPasswordReset(email: String) {
         authRepo.sendPasswordReset(email) { success, msg ->
-            _loginResult.value = Pair(success, msg)
+            _passwordResetResult.value = Pair(success, msg)
         }
     }
 }

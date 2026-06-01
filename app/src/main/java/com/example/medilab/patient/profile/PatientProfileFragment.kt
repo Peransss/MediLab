@@ -6,30 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.medilab.auth.LoginActivity
 import com.example.medilab.databinding.FragmentPatientProfileBinding
-import com.example.medilab.repository.AuthRepository
-import com.example.medilab.repository.UserRepository
-
-class PatientProfileViewModel : ViewModel() {
-    private val userRepo = UserRepository()
-    private val authRepo = AuthRepository()
-
-    private val _user = MutableLiveData<com.example.medilab.model.User?>()
-    val user: LiveData<com.example.medilab.model.User?> = _user
-
-    fun load() {
-        userRepo.getUser(authRepo.getCurrentUid()) { _user.value = it }
-    }
-
-    fun logout() {
-        authRepo.logout()
-    }
-}
 
 class PatientProfileFragment : Fragment() {
     private var _binding: FragmentPatientProfileBinding? = null
