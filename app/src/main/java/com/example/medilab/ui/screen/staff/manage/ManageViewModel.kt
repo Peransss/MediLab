@@ -107,4 +107,28 @@ class ManageViewModel : ViewModel() {
     fun saveObat(o: Obat, onDone: () -> Unit) {
         obatRepo.add(o) { onDone(); loadObat() }
     }
+
+    private val _petugasSaveError = MutableStateFlow<String?>(null)
+    val petugasSaveError: StateFlow<String?> = _petugasSaveError.asStateFlow()
+    private val _petugasSaving = MutableStateFlow(false)
+    val petugasSaving: StateFlow<Boolean> = _petugasSaving.asStateFlow()
+
+    fun savePetugas(email: String, password: String, nama: String, role: String, noHP: String) {
+        _petugasSaveError.value = null
+        _petugasSaving.value = true
+        com.example.medilab.repository.AuthRepository().createStaffAccount(
+            email, password, nama, role, noHP
+        ) { ok, msg ->
+            _petugasSaving.value = false
+            if (ok) {
+                loadPetugas()
+            } else {
+                _petugasSaveError.value = msg
+            }
+        }
+    }
+
+    fun clearPetugasSaveError() {
+        _petugasSaveError.value = null
+    }
 }

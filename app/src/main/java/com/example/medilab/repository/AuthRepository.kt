@@ -53,10 +53,27 @@ class AuthRepository {
     }
 
     fun createStaffAccount(email: String, password: String, nama: String, role: String, noHP: String, onResult: (Boolean, String) -> Unit) {
-        auth.createUserWithEmailAndPassword(email, password)
+        // Use a secondary FirebaseApp instance so the primary auth session
+        // (the currently signed-in staff member) is NOT replaced by the new
+        // account being created. createUserWithEmailAndPassword on the default
+        // app implicitly signs in the new user.
+        val secondaryApp = try {
+            com.google.firebase.FirebaseApp.getInstance("staffCreate")
+        } catch (e: IllegalStateException) {
+            val options = com.google.firebase.FirebaseApp.getInstance().options
+            com.google.firebase.FirebaseApp.initializeApp(
+                com.example.medilab.MediLabApp.instance.applicationContext,
+                options,
+                "staffCreate"
+            )
+        }
+        val secondaryAuth = FirebaseAuth.getInstance(secondaryApp)
+        val secondaryDb = FirebaseFirestore.getInstance(secondaryApp)
+
+        secondaryAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val uid = auth.currentUser?.uid ?: ""
+                    val uid = secondaryAuth.currentUser?.uid ?: ""
                     val user = User(
                         id = uid,
                         nama = nama,
@@ -64,7 +81,7 @@ class AuthRepository {
                         role = role,
                         noHP = noHP
                     )
-                    firestore.collection(Constants.COLLECTION_USERS).document(uid).set(user)
+                    secondaryDb.collection(Constants.COLLECTION_USERS).document(uid).set(user)
                         .addOnSuccessListener { onResult(true, "Akun $role berhasil dibuat") }
                         .addOnFailureListener { onResult(false, "Gagal menyimpan data") }
                 } else {
