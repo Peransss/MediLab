@@ -13,21 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MediLab">
         <activity
-            android:name=".auth.LoginActivity"
-            android:exported="true">
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MediLab">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".auth.RegisterPatientActivity"
-            android:exported="false" />
-        <activity
-            android:name=".staff.StaffActivity"
-            android:exported="false" />
-        <activity
-            android:name=".patient.PatientActivity"
-            android:exported="false" />
     </application>
 </manifest>
