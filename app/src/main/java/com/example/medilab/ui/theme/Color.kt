@@ -23,11 +23,6 @@ val OnError = Color(0xFFFFFFFF)
 val ErrorContainer = Color(0xFFFEE2E2)
 val OnErrorContainer = Color(0xFF991B1B)
 
-val Warning = Color(0xFFF59E0B)
-val OnWarning = Color(0xFFFFFFFF)
-val WarningContainer = Color(0xFFFEF3C7)
-val OnWarningContainer = Color(0xFF92400E)
-
 val Background = Color(0xFFFAFAFE)
 val OnBackground = Color(0xFF0F172A)
 
@@ -64,3 +59,12 @@ val DarkOnSurfaceVariant = Color(0xFF94A3B8)
 
 val DarkOutline = Color(0xFF3F3D52)
 val DarkOutlineVariant = Color(0xFF2A2839)
+
+val DarkSecondaryContainer = Color(0xFF7A2C4D)
+val DarkOnSecondaryContainer = Color(0xFFFFD9E5)
+
+val DarkTertiaryContainer = Color(0xFF065F46)
+val DarkOnTertiaryContainer = Color(0xFFD1FAE5)
+
+val DarkErrorContainer = Color(0xFF7F1D1D)
+val DarkOnErrorContainer = Color(0xFFFEE2E2)
