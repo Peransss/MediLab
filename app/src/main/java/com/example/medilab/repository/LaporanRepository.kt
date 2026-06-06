@@ -38,6 +38,17 @@ class LaporanRepository {
             .addOnFailureListener { onResult(emptyList()) }
     }
 
+    fun getByPasienIdAndStatus(pasienId: String, status: String, onResult: (List<Laporan>) -> Unit) {
+        collection.whereEqualTo("pasienId", pasienId)
+            .whereEqualTo("status", status)
+            .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING).get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { it.toObject(Laporan::class.java) }
+                onResult(list)
+            }
+            .addOnFailureListener { onResult(emptyList()) }
+    }
+
     fun getById(id: String, onResult: (Laporan?) -> Unit) {
         collection.document(id).get()
             .addOnSuccessListener { doc -> onResult(doc.toObject(Laporan::class.java)) }

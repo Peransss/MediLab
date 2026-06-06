@@ -123,11 +123,16 @@ fun PatientProfileScreen(
     }
 
     if (showPassword) {
+        val passwordError by viewModel.passwordError.collectAsStateWithLifecycle()
+        val passwordSubmitting by viewModel.passwordSubmitting.collectAsStateWithLifecycle()
         ChangePasswordDialog(
-            onDismiss = { showPassword = false },
-            onSubmit = { newPass ->
-                viewModel.changePassword(newPass) { ok -> showPassword = false }
-            }
+            errorMessage = passwordError,
+            submitting = passwordSubmitting,
+            onDismiss = {
+                showPassword = false
+                viewModel.clearPasswordError()
+            },
+            onSubmit = { newPass -> viewModel.changePassword(newPass) }
         )
     }
 
@@ -204,16 +209,32 @@ private fun EditProfileBottomSheet(
 }
 
 @Composable
-private fun ChangePasswordDialog(onDismiss: () -> Unit, onSubmit: (String) -> Unit) {
+private fun ChangePasswordDialog(
+    errorMessage: String?,
+    submitting: Boolean,
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit
+) {
     var newPass by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Ganti Password") },
         text = {
-            MediLabPasswordField(value = newPass, onValueChange = { newPass = it }, label = "Password Baru")
+            Column {
+                MediLabPasswordField(
+                    value = newPass,
+                    onValueChange = { newPass = it },
+                    label = "Password Baru",
+                    isError = errorMessage != null,
+                    errorMessage = errorMessage
+                )
+            }
         },
         confirmButton = {
-            TextButton(onClick = { onSubmit(newPass) }) { Text("Simpan") }
+            TextButton(
+                onClick = { onSubmit(newPass) },
+                enabled = !submitting && newPass.length >= 6
+            ) { Text(if (submitting) "Menyimpan..." else "Simpan") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Batal") }

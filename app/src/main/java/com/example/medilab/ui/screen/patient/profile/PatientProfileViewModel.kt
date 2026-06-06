@@ -42,14 +42,39 @@ class PatientProfileViewModel : ViewModel() {
     }
 
     // NOTE: Firebase requires recent re-authentication for sensitive operations
-    // like password changes. The current implementation does not reauth the user,
-    // so this will fail for accounts that have been signed in for a long time.
-    // Proper reauth flow is deferred.
-    fun changePassword(newPassword: String, onDone: (Boolean) -> Unit) {
+    // like password changes. This implementation will fail with
+    // 'This operation is sensitive and requires recent authentication' for users
+    // signed in more than ~5 minutes ago. A full reauth flow (re-prompt for
+    // current password, then reauthenticate) is deferred.
+    // The dialog below shows the actual Firebase error message so the user
+    // understands why it failed rather than failing silently.
+    private val _passwordError = MutableStateFlow<String?>(null)
+    val passwordError: StateFlow<String?> = _passwordError.asStateFlow()
+    private val _passwordSubmitting = MutableStateFlow(false)
+    val passwordSubmitting: StateFlow<Boolean> = _passwordSubmitting.asStateFlow()
+
+    fun changePassword(newPassword: String) {
+        if (newPassword.length < 6) {
+            _passwordError.value = "Password minimal 6 karakter"
+            return
+        }
+        _passwordError.value = null
+        _passwordSubmitting.value = true
         val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-        user?.updatePassword(newPassword)?.addOnCompleteListener { task ->
-            onDone(task.isSuccessful)
-        } ?: onDone(false)
+        if (user == null) {
+            _passwordError.value = "Tidak ada user login"
+            _passwordSubmitting.value = false
+            return
+        }
+        user.updatePassword(newPassword).addOnCompleteListener { task ->
+            _passwordSubmitting.value = false
+            _passwordError.value = if (task.isSuccessful) null
+                else (task.exception?.message ?: "Gagal mengubah password")
+        }
+    }
+
+    fun clearPasswordError() {
+        _passwordError.value = null
     }
 
     fun logout(onLogout: () -> Unit) {

@@ -20,14 +20,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medilab.model.Laporan
+import com.example.medilab.ui.component.EmptyState
+import com.example.medilab.ui.component.ErrorState
+import com.example.medilab.ui.component.LoadingState
 import com.example.medilab.ui.component.MediLabCard
 import com.example.medilab.ui.component.MediLabTopAppBar
 import com.example.medilab.ui.component.StatusChip
 import com.example.medilab.ui.theme.Spacing
+import com.example.medilab.ui.util.UiState
 
 @Composable
 fun LaporanDetailScreen(
@@ -35,42 +38,56 @@ fun LaporanDetailScreen(
     onBack: () -> Unit,
     viewModel: LaporanDetailViewModel = viewModel()
 ) {
-    val laporan by viewModel.laporan.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(laporanId) { viewModel.load(laporanId) }
 
     Scaffold(
         topBar = { MediLabTopAppBar(title = "Detail Laporan", onBackClick = onBack) }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            laporan?.let { l ->
-                Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.lg),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
-                ) {
-                    DetailHeader(l)
-                    DetailInfoCard(
-                        "Info Pasien",
-                        listOf(
-                            "Nama" to l.pasienId,
-                            "ID" to l.pasienId
-                        )
-                    )
-                    DetailInfoCard("Info Dokter", listOf("ID Dokter" to l.dokterId))
-                    DetailParameterCard(l)
-                    DetailResepCard(l)
-                    DetailInfoCard(
-                        "Info Rumah Sakit",
-                        listOf(
-                            "Nama" to l.rumahSakit.nama,
-                            "Alamat" to l.rumahSakit.alamat,
-                            "Kota" to l.rumahSakit.kota
-                        )
-                    )
-                }
-            } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Memuat...", style = MaterialTheme.typography.bodyLarge)
+            when (val s = state) {
+                is UiState.Loading -> LoadingState()
+                is UiState.Error -> ErrorState(message = s.message, onRetry = { viewModel.load(laporanId) })
+                is UiState.Empty -> EmptyState(title = "Laporan kosong")
+                is UiState.Success -> DetailContent(s.data)
             }
         }
+    }
+}
+
+@Composable
+private fun DetailContent(data: LaporanDetailData) {
+    val l = data.laporan
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+    ) {
+        DetailHeader(l)
+        DetailInfoCard(
+            "Info Pasien",
+            listOf(
+                "Nama" to (data.pasien?.nama?.ifBlank { null } ?: "Memuat..."),
+                "No. RM" to (data.pasien?.noRekamMedis?.ifBlank { null } ?: "-"),
+                "ID" to l.pasienId
+            )
+        )
+        DetailInfoCard(
+            "Info Dokter",
+            listOf(
+                "Nama" to (data.dokter?.nama?.ifBlank { null } ?: if (l.dokterId.isBlank()) "-" else "Memuat..."),
+                "ID Dokter" to l.dokterId
+            )
+        )
+        DetailParameterCard(l)
+        DetailResepCard(l)
+        DetailInfoCard(
+            "Info Rumah Sakit",
+            listOf(
+                "Nama" to l.rumahSakit.nama,
+                "Alamat" to l.rumahSakit.alamat,
+                "Kota" to l.rumahSakit.kota
+            )
+        )
     }
 }
 

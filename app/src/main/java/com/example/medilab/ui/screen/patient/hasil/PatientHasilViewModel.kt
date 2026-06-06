@@ -26,8 +26,7 @@ class PatientHasilViewModel : ViewModel() {
             return
         }
         viewModelScope.launch {
-            laporanRepo.getByStatus(Constants.STATUS_SELESAI) { allSelesai ->
-                val mine = allSelesai.filter { it.pasienId == uid }.sortedByDescending { it.createdAt }
+            laporanRepo.getByPasienIdAndStatus(uid, Constants.STATUS_SELESAI) { mine ->
                 _uiState.value = if (mine.isEmpty()) UiState.Empty else UiState.Success(mine)
             }
         }
