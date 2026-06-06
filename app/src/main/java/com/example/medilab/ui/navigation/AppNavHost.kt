@@ -8,6 +8,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.medilab.ui.screen.SplashScreen
+import com.example.medilab.ui.screen.auth.ForgotPasswordScreen
+import com.example.medilab.ui.screen.auth.LoginScreen
+import com.example.medilab.ui.screen.auth.RegisterScreen
+import com.example.medilab.ui.screen.onboarding.Onboarding1Screen
+import com.example.medilab.ui.screen.onboarding.Onboarding2Screen
+import com.example.medilab.ui.screen.onboarding.Onboarding3Screen
 import com.example.medilab.util.Constants
 
 @Composable
@@ -17,7 +23,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         startDestination = Route.Splash.path
     ) {
         composable(Route.Splash.path) {
-            SplashScreen()
+            SplashScreen(onNavigate = { route -> navController.navigate(route) })
         }
 
         composable(Route.Onboarding1.path) {
