@@ -16,6 +16,8 @@ import com.example.medilab.ui.screen.onboarding.Onboarding2Screen
 import com.example.medilab.ui.screen.onboarding.Onboarding3Screen
 import com.example.medilab.ui.screen.patient.laporan.LaporanDetailScreen
 import com.example.medilab.ui.screen.patient.PatientRootScreen
+import com.example.medilab.ui.screen.staff.StaffLaporanDetailScreen
+import com.example.medilab.ui.screen.staff.StaffRootScreen
 import com.example.medilab.util.Constants
 
 @Composable
@@ -67,23 +69,15 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Route.StaffRoot.path) {
             StaffRootScreen(rootNavController = navController)
         }
-        composable(Route.StaffHome.path) { StaffHomeScreen() }
-        composable(Route.StaffManage.path) { StaffManageScreen() }
-        composable(Route.StaffLaporan.path) { StaffLaporanScreen() }
-        composable(Route.StaffNotifikasi.path) { StaffNotifikasiScreen() }
-        composable(Route.StaffProfile.path) {
-            StaffProfileScreen(onLogout = {
-                navController.navigate(Route.Login.path) {
-                    popUpTo(0) { inclusive = true }
-                }
-            })
-        }
         composable(
             route = Route.StaffLaporanDetail.path,
             arguments = listOf(navArgument("laporanId") { type = NavType.StringType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("laporanId") ?: ""
-            StaffLaporanDetailScreen(laporanId = id, onBack = { navController.popBackStack() })
+            StaffLaporanDetailScreen(
+                laporanId = id,
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Route.PatientRoot.path) {
