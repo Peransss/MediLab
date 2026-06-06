@@ -2,6 +2,7 @@ package com.example.medilab.repository
 
 import com.example.medilab.model.User
 import com.example.medilab.util.Constants
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -102,6 +103,19 @@ class AuthRepository {
                 if (task.isSuccessful) onResult(true, "Email reset terkirim")
                 else onResult(false, task.exception?.message ?: "Gagal mengirim email")
             }
+    }
+
+    fun changePassword(oldPassword: String, newPassword: String, onResult: (Boolean, String) -> Unit) {
+        val user = auth.currentUser ?: return onResult(false, "Tidak ada user login")
+        val email = user.email ?: return onResult(false, "Email tidak tersedia")
+        val credential = EmailAuthProvider.getCredential(email, oldPassword)
+        user.reauthenticate(credential)
+            .addOnSuccessListener {
+                user.updatePassword(newPassword)
+                    .addOnSuccessListener { onResult(true, "Password diubah") }
+                    .addOnFailureListener { onResult(false, it.message ?: "Gagal mengubah password") }
+            }
+            .addOnFailureListener { onResult(false, "Password lama salah") }
     }
 
     private fun generateNoRM(): String {

@@ -29,4 +29,18 @@ class NotifikasiRepository {
             .addOnSuccessListener { onResult(true) }
             .addOnFailureListener { onResult(false) }
     }
+
+    fun markAllAsRead(userId: String, onResult: (Boolean) -> Unit) {
+        collection.whereEqualTo("userId", userId).whereEqualTo("dibaca", false).get()
+            .addOnSuccessListener { snapshot ->
+                val batch = firestore.batch()
+                snapshot.documents.forEach { doc ->
+                    batch.update(doc.reference, "dibaca", true)
+                }
+                batch.commit()
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
+            .addOnFailureListener { onResult(false) }
+    }
 }
