@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.medilab.ui.screen.SplashScreen
+import com.example.medilab.util.Constants
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -16,7 +17,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         startDestination = Route.Splash.path
     ) {
         composable(Route.Splash.path) {
-            SplashScreen(onNavigate = { route -> navController.navigate(route) })
+            SplashScreen()
         }
 
         composable(Route.Onboarding1.path) {
@@ -103,8 +104,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
 private fun navigateByRole(navController: NavHostController, role: String) {
     val target = when (role) {
-        "admin", "petugas", "dokter" -> Route.StaffRoot.path
-        "pasien" -> Route.PatientRoot.path
+        Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
+        Constants.ROLE_PASIEN -> Route.PatientRoot.path
         else -> Route.Login.path
     }
     navController.navigate(target) {
