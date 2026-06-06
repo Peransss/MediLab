@@ -1,12 +1,19 @@
 package com.example.medilab.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.medilab.repository.AuthRepository
+import com.example.medilab.repository.UserRepository
 import com.example.medilab.ui.screen.SplashScreen
 import com.example.medilab.ui.screen.auth.ForgotPasswordScreen
 import com.example.medilab.ui.screen.auth.LoginScreen
@@ -16,8 +23,8 @@ import com.example.medilab.ui.screen.onboarding.Onboarding2Screen
 import com.example.medilab.ui.screen.onboarding.Onboarding3Screen
 import com.example.medilab.ui.screen.patient.laporan.LaporanDetailScreen
 import com.example.medilab.ui.screen.patient.PatientRootScreen
-import com.example.medilab.ui.screen.staff.StaffLaporanDetailScreen
 import com.example.medilab.ui.screen.staff.StaffRootScreen
+import com.example.medilab.ui.screen.staff.laporan.StaffLaporanDetailScreen
 import com.example.medilab.util.Constants
 
 @Composable
@@ -74,7 +81,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             arguments = listOf(navArgument("laporanId") { type = NavType.StringType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("laporanId") ?: ""
-            StaffLaporanDetailScreen(
+            StaffLaporanDetailRoute(
                 laporanId = id,
                 onBack = { navController.popBackStack() }
             )
@@ -90,6 +97,30 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             val id = backStackEntry.arguments?.getString("laporanId") ?: ""
             LaporanDetailScreen(laporanId = id, onBack = { navController.popBackStack() })
         }
+    }
+}
+
+@Composable
+private fun StaffLaporanDetailRoute(
+    laporanId: String,
+    onBack: () -> Unit
+) {
+    val authRepo = remember { AuthRepository() }
+    val userRepo = remember { UserRepository() }
+    var userRole by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val uid = authRepo.getCurrentUid()
+        if (uid.isNotEmpty()) {
+            userRepo.getUser(uid) { user -> userRole = user?.role ?: "" }
+        }
+    }
+    val role = userRole
+    if (role != null) {
+        StaffLaporanDetailScreen(
+            laporanId = laporanId,
+            onBack = onBack,
+            userRole = role
+        )
     }
 }
 

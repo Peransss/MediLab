@@ -19,6 +19,7 @@ import com.example.medilab.ui.component.BottomNavItems
 import com.example.medilab.ui.component.MediLabBottomBar
 import com.example.medilab.ui.navigation.Route
 import com.example.medilab.ui.screen.staff.home.StaffHomeScreen
+import com.example.medilab.ui.screen.staff.laporan.StaffLaporanContainerScreen
 import com.example.medilab.ui.screen.staff.manage.ManageContainerScreen
 
 @Composable
@@ -74,23 +75,13 @@ fun StaffRootScreen(rootNavController: NavHostController) {
 }
 
 @Composable
-fun StaffLaporanContainerScreen(onLaporanClick: (String) -> Unit) {
-    StaffPlaceholder("Laporan — coming in Task 7")
-}
-
-@Composable
 fun StaffNotifikasiScreen() {
-    StaffPlaceholder("Notifikasi — coming in Task 7")
+    StaffPlaceholder("Notifikasi — coming in Task 8")
 }
 
 @Composable
 fun StaffProfileScreen(onLogout: () -> Unit) {
-    StaffPlaceholder("Profile — coming in Task 7")
-}
-
-@Composable
-fun StaffLaporanDetailScreen(laporanId: String, onBack: () -> Unit) {
-    StaffPlaceholder("Detail Laporan: $laporanId — coming in Task 7")
+    StaffPlaceholder("Profile — coming in Task 8")
 }
 
 @Composable
