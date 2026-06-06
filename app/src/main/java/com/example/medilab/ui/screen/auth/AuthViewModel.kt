@@ -53,13 +53,23 @@ class AuthViewModel : ViewModel() {
         }
         _uiState.value = state.copy(isLoading = true, errorMessage = null)
         authRepo.login(state.email, state.password) { success, msg, role ->
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                errorMessage = if (success) null else msg,
-                userRole = role,
-                successMessage = if (success) msg else null
-            )
-            if (success && role != null) onSuccess(role)
+            if (success && !role.isNullOrEmpty()) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = null,
+                    successMessage = msg,
+                    userRole = role,
+                    email = "",
+                    password = ""
+                )
+                onSuccess(role)
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = if (success) "Akun tidak memiliki role. Hubungi admin." else msg,
+                    successMessage = if (success) null else null
+                )
+            }
         }
     }
 

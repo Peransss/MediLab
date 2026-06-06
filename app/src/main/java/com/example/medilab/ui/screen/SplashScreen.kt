@@ -16,19 +16,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.medilab.repository.AuthRepository
+import com.example.medilab.repository.UserRepository
 import com.example.medilab.ui.navigation.Route
+import com.example.medilab.util.Constants
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(onNavigate: (route: String) -> Unit) {
     val authRepo = AuthRepository()
+    val userRepo = UserRepository()
     LaunchedEffect(Unit) {
         delay(800)
         val uid = authRepo.getCurrentUid()
         if (uid.isEmpty()) {
             onNavigate(Route.Onboarding1.path)
-        } else {
-            onNavigate(Route.Login.path)
+            return@LaunchedEffect
+        }
+        userRepo.getUser(uid) { user ->
+            val target = when (user?.role) {
+                Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
+                Constants.ROLE_PASIEN -> Route.PatientRoot.path
+                else -> Route.Login.path
+            }
+            onNavigate(target)
         }
     }
     Box(

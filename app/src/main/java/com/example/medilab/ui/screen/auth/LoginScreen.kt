@@ -87,6 +87,10 @@ fun LoginScreen(
             onClick = { viewModel.login(onLoginSuccess) },
             enabled = !state.isLoading
         )
+        state.errorMessage?.let { msg ->
+            Spacer(Modifier.height(Spacing.sm))
+            Text(msg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+        }
         Spacer(Modifier.height(Spacing.lg))
         Text(
             text = "Belum punya akun?",

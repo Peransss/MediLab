@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medilab.ui.component.MediLabButton
+import com.example.medilab.ui.component.MediLabButtonVariant
 import com.example.medilab.ui.component.MediLabTextField
 import com.example.medilab.ui.component.MediLabTopAppBar
 import com.example.medilab.ui.theme.Spacing
@@ -52,19 +53,25 @@ fun ForgotPasswordScreen(
                 keyboardType = KeyboardType.Email, isError = state.emailError != null, errorMessage = state.emailError
             )
             Spacer(Modifier.height(Spacing.xl))
-            if (state.errorMessage != null) {
-                Text(state.errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            state.errorMessage?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(Spacing.sm))
             }
-            if (state.successMessage != null) {
-                Text(state.successMessage!!, color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.bodyMedium)
+            state.successMessage?.let {
+                Text(it, color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(Spacing.sm))
+                MediLabButton(
+                    text = "Kembali ke Masuk",
+                    onClick = onBack,
+                    variant = MediLabButtonVariant.OUTLINED
+                )
+            } ?: run {
+                MediLabButton(
+                    text = if (state.isLoading) "Mengirim..." else "Kirim Email Reset",
+                    onClick = viewModel::sendPasswordReset,
+                    enabled = !state.isLoading
+                )
             }
-            MediLabButton(
-                text = if (state.isLoading) "Mengirim..." else "Kirim Email Reset",
-                onClick = viewModel::sendPasswordReset,
-                enabled = !state.isLoading
-            )
         }
     }
 }
