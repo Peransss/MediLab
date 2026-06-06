@@ -14,6 +14,8 @@ import com.example.medilab.ui.screen.auth.RegisterScreen
 import com.example.medilab.ui.screen.onboarding.Onboarding1Screen
 import com.example.medilab.ui.screen.onboarding.Onboarding2Screen
 import com.example.medilab.ui.screen.onboarding.Onboarding3Screen
+import com.example.medilab.ui.screen.patient.laporan.LaporanDetailScreen
+import com.example.medilab.ui.screen.patient.PatientRootScreen
 import com.example.medilab.util.Constants
 
 @Composable
@@ -86,17 +88,6 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
         composable(Route.PatientRoot.path) {
             PatientRootScreen(rootNavController = navController)
-        }
-        composable(Route.PatientHome.path) { PatientHomeScreen() }
-        composable(Route.PatientHasil.path) { PatientHasilScreen() }
-        composable(Route.PatientRiwayat.path) { PatientRiwayatScreen() }
-        composable(Route.PatientNotifikasi.path) { PatientNotifikasiScreen() }
-        composable(Route.PatientProfile.path) {
-            PatientProfileScreen(onLogout = {
-                navController.navigate(Route.Login.path) {
-                    popUpTo(0) { inclusive = true }
-                }
-            })
         }
         composable(
             route = Route.LaporanDetail.path,
