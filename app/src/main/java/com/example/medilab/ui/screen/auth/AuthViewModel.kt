@@ -1,11 +1,14 @@
 package com.example.medilab.ui.screen.auth
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.medilab.repository.AuthRepository
+import com.example.medilab.util.PasswordStrengthChecker
 import com.example.medilab.util.Validators
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class AuthUiState(
     val email: String = "",
@@ -28,12 +31,59 @@ class AuthViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun onEmailChange(value: String) {
-        _uiState.value = _uiState.value.copy(email = value, emailError = null)
+    private val allowedEmailDomains = setOf(
+        "gmail.com",
+        "yahoo.com",
+        "yahoo.co.id",
+        "outlook.com",
+        "hotmail.com",
+        "mail.com",
+        "protonmail.com",
+        "icloud.com"
+    )
+
+    fun onEmailChange(newEmail: String) {
+        _uiState.value = _uiState.value.copy(
+            email = newEmail,
+            emailError = validateEmail(newEmail)
+        )
     }
 
+    private fun validateEmail(email: String): String? {
+        return when {
+            email.isBlank() -> "Email tidak boleh kosong"
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
+                "Format email tidak valid"
+            !isAllowedEmailDomain(email) ->
+                "Domain email tidak diizinkan. Gunakan: ${allowedEmailDomains.joinToString(", ")}"
+            else -> null
+        }
+    }
+
+    private fun isAllowedEmailDomain(email: String): Boolean {
+        val domain = email.substringAfterLast("@").lowercase()
+        return allowedEmailDomains.contains(domain)
+    }
+
+
     fun onPasswordChange(value: String) {
-        _uiState.value = _uiState.value.copy(password = value, passwordError = null)
+        _uiState.value = _uiState.value.copy(
+            password = value,
+            passwordError = null
+        )
+    }
+
+    fun validatePassword(): Boolean {
+        val password = _uiState.value.password
+        if (password.isBlank()) {
+            _uiState.value = _uiState.value.copy(passwordError = "Password tidak boleh kosong")
+            return false
+        }
+        viewModelScope.launch {
+            val result = PasswordStrengthChecker.isPasswordStrong(password)
+            _uiState.value = _uiState.value.copy(passwordError = result.message)
+        }
+        return true
     }
 
     fun onNamaChange(value: String) { _uiState.value = _uiState.value.copy(nama = value) }
@@ -48,7 +98,7 @@ class AuthViewModel : ViewModel() {
             return
         }
         if (!Validators.isValidPassword(state.password)) {
-            _uiState.value = state.copy(passwordError = "Password minimal 6 karakter")
+            _uiState.value = state.copy(passwordError = "Password minimal 8 karakter")
             return
         }
         _uiState.value = state.copy(isLoading = true, errorMessage = null)
@@ -80,14 +130,28 @@ class AuthViewModel : ViewModel() {
             _uiState.value = state.copy(errorMessage = "Semua field harus diisi")
             return
         }
-        _uiState.value = state.copy(isLoading = true, errorMessage = null)
-        authRepo.registerPatient(state.email, state.password, state.nama, state.noHP, state.alamat, state.tanggalLahir) { success, msg ->
+        viewModelScope.launch {
+            val result = PasswordStrengthChecker.isPasswordStrong(state.password)
+            if (!result.isStrong) {
+                _uiState.value = _uiState.value.copy(
+                    passwordError = result.message,
+                    errorMessage = null
+                )
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                errorMessage = if (success) null else msg,
-                successMessage = if (success) msg else null
+                isLoading = true,
+                errorMessage = null,
+                passwordError = null
             )
-            if (success) onSuccess()
+            authRepo.registerPatient(state.email, state.password, state.nama, state.noHP, state.alamat, state.tanggalLahir) { success, msg ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = if (success) null else msg,
+                    successMessage = if (success) msg else null
+                )
+                if (success) onSuccess()
+            }
         }
     }
 

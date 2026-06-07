@@ -148,7 +148,7 @@ fun StaffProfileScreen(
                 showPassword = false
                 viewModel.clearPasswordError()
             },
-            onSubmit = { newPass -> viewModel.changePassword(newPass) }
+            onSubmit = { oldPass, newPass -> viewModel.changePassword(oldPass, newPass) }
         )
     }
 
@@ -248,25 +248,33 @@ private fun ChangePasswordDialog(
     errorMessage: String?,
     submitting: Boolean,
     onDismiss: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (String, String) -> Unit
 ) {
+    var oldPass by remember { mutableStateOf("") }
     var newPass by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Ganti Password") },
         text = {
-            MediLabPasswordField(
-                value = newPass,
-                onValueChange = { newPass = it },
-                label = "Password Baru",
-                isError = errorMessage != null,
-                errorMessage = errorMessage
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                MediLabPasswordField(
+                    value = oldPass,
+                    onValueChange = { oldPass = it },
+                    label = "Password Lama"
+                )
+                MediLabPasswordField(
+                    value = newPass,
+                    onValueChange = { newPass = it },
+                    label = "Password Baru",
+                    isError = errorMessage != null,
+                    errorMessage = errorMessage
+                )
+            }
         },
         confirmButton = {
             TextButton(
-                onClick = { onSubmit(newPass) },
-                enabled = !submitting && newPass.length >= 6
+                onClick = { onSubmit(oldPass, newPass) },
+                enabled = !submitting && newPass.length >= 8 && oldPass.isNotBlank()
             ) { Text(if (submitting) "Menyimpan..." else "Simpan") }
         },
         dismissButton = {

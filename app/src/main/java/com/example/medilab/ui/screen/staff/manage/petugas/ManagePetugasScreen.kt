@@ -122,7 +122,7 @@ private fun PetugasFormSheet(
     var submitted by remember { mutableStateOf(false) }
 
     val emailError = if (submitted && !Validators.isValidEmail(email)) "Email tidak valid" else null
-    val passwordError = if (submitted && !Validators.isValidPassword(password)) "Password minimal 6 karakter" else null
+    val passwordError = if (submitted && !Validators.isValidPassword(password)) "Password minimal 8 karakter" else null
     val noHPError = if (submitted && noHP.isNotBlank() && !Validators.isValidPhone(noHP)) "No HP tidak valid" else null
     val namaError = if (submitted && nama.isBlank()) "Nama harus diisi" else null
     val isValid = Validators.isValidEmail(email) && Validators.isValidPassword(password) && nama.isNotBlank() && noHP.isNotBlank()

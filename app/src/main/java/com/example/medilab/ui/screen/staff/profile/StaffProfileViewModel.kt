@@ -41,34 +41,28 @@ class StaffProfileViewModel : ViewModel() {
         }
     }
 
-    // NOTE: Firebase requires recent re-authentication for sensitive operations
-    // like password changes. This implementation will fail with
-    // 'This operation is sensitive and requires recent authentication' for users
-    // signed in more than ~5 minutes ago. A full reauth flow (re-prompt for
-    // current password, then reauthenticate) is deferred — for now the dialog
-    // surfaces the actual Firebase error so the user understands why.
+    // Firebase requires recent re-authentication for sensitive operations like
+    // password changes. We use AuthRepository.changePassword() which handles
+    // re-authentication via EmailAuthProvider before calling updatePassword().
     private val _passwordError = MutableStateFlow<String?>(null)
     val passwordError: StateFlow<String?> = _passwordError.asStateFlow()
     private val _passwordSubmitting = MutableStateFlow(false)
     val passwordSubmitting: StateFlow<Boolean> = _passwordSubmitting.asStateFlow()
 
-    fun changePassword(newPassword: String) {
-        if (newPassword.length < 6) {
-            _passwordError.value = "Password minimal 6 karakter"
+    fun changePassword(oldPassword: String, newPassword: String) {
+        if (oldPassword.isBlank()) {
+            _passwordError.value = "Password lama harus diisi"
+            return
+        }
+        if (newPassword.length < 8) {
+            _passwordError.value = "Password minimal 8 karakter"
             return
         }
         _passwordError.value = null
         _passwordSubmitting.value = true
-        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-        if (user == null) {
-            _passwordError.value = "Tidak ada user login"
+        authRepo.changePassword(oldPassword, newPassword) { ok, msg ->
             _passwordSubmitting.value = false
-            return
-        }
-        user.updatePassword(newPassword).addOnCompleteListener { task ->
-            _passwordSubmitting.value = false
-            _passwordError.value = if (task.isSuccessful) null
-                else (task.exception?.message ?: "Gagal mengubah password")
+            _passwordError.value = if (ok) null else msg
         }
     }
 
