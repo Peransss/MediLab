@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -42,7 +43,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medilab.ui.component.EmptyState
 import com.example.medilab.ui.component.ErrorState
-import com.example.medilab.ui.component.HeroCard
 import com.example.medilab.ui.component.LoadingState
 import com.example.medilab.ui.component.MediLabButton
 import com.example.medilab.ui.component.MediLabButtonVariant
@@ -81,20 +81,54 @@ fun PatientProfileScreen(
                         modifier = Modifier.fillMaxSize().padding(Spacing.lg),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
-                        HeroCard(title = user.nama.ifBlank { "User" }, subtitle = "${user.role.uppercase()} • ${user.id}") {
-                            Box(
-                                modifier = Modifier.size(80.dp).clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .padding(Spacing.md),
-                                contentAlignment = Alignment.Center
+
+                        // --- BAGIAN YANG DIUBAH: Mengganti HeroCard dengan MediLabCard + Row ---
+                        MediLabCard {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.primary) // Warna ungu bawaan tema
+                                    .padding(Spacing.lg),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(
-                                    text = user.nama.firstOrNull()?.uppercase() ?: "U",
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                                // 1. Teks Info (Kiri)
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = user.nama.ifBlank { "User" },
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "${user.role.uppercase()} • ${user.id}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(Spacing.md))
+
+                                // 2. Avatar (Kanan)
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = user.nama.firstOrNull()?.uppercase() ?: "U",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                             }
                         }
+                        // --- AKHIR BAGIAN YANG DIUBAH ---
+
                         ProfileMenuItem(icon = Icons.Default.Edit, label = "Edit Profile") { showEdit = true }
                         ProfileMenuItem(icon = Icons.Default.Lock, label = "Ganti Password") { showPassword = true }
                         DarkModeToggleRow(enabled = isDark, onChange = { onToggleDark() })

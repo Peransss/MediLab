@@ -1,11 +1,13 @@
 package com.example.medilab.ui.screen.patient.profile
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medilab.model.User
 import com.example.medilab.repository.AuthRepository
 import com.example.medilab.repository.UserRepository
 import com.example.medilab.ui.util.UiState
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,13 +43,21 @@ class PatientProfileViewModel : ViewModel() {
         }
     }
 
-    // NOTE: Firebase requires recent re-authentication for sensitive operations
-    // like password changes. This implementation will fail with
-    // 'This operation is sensitive and requires recent authentication' for users
-    // signed in more than ~5 minutes ago. A full reauth flow (re-prompt for
-    // current password, then reauthenticate) is deferred.
-    // The dialog below shows the actual Firebase error message so the user
-    // understands why it failed rather than failing silently.
+    fun uploadProfilePicture(
+        uri: Uri,
+        nama: String,
+        noHP: String,
+        alamat: String,
+        onDone: () -> Unit
+    ) {
+        val updates = mapOf(
+            "nama" to nama,
+            "noHP" to noHP,
+            "alamat" to alamat
+        )
+        updateProfile(updates, onDone)
+    }
+
     private val _passwordError = MutableStateFlow<String?>(null)
     val passwordError: StateFlow<String?> = _passwordError.asStateFlow()
     private val _passwordSubmitting = MutableStateFlow(false)
@@ -60,7 +70,7 @@ class PatientProfileViewModel : ViewModel() {
         }
         _passwordError.value = null
         _passwordSubmitting.value = true
-        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
             _passwordError.value = "Tidak ada user login"
             _passwordSubmitting.value = false
@@ -69,7 +79,7 @@ class PatientProfileViewModel : ViewModel() {
         user.updatePassword(newPassword).addOnCompleteListener { task ->
             _passwordSubmitting.value = false
             _passwordError.value = if (task.isSuccessful) null
-                else (task.exception?.message ?: "Gagal mengubah password")
+            else (task.exception?.message ?: "Gagal mengubah password")
         }
     }
 

@@ -56,9 +56,9 @@ fun PatientHomeScreen(
                 IconButton(onClick = onNotificationClick) {
                     Icon(Icons.Default.Notifications, contentDescription = "Notifikasi")
                 }
-                IconButton(onClick = onProfileClick) {
-                    Icon(Icons.Default.Person, contentDescription = "Profile")
-                }
+                //IconButton(onClick = onProfileClick) {
+                    //Icon(Icons.Default.Person, contentDescription = "Profile")
+                //}
             }
         )
         when (val s = state) {
