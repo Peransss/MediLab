@@ -31,17 +31,6 @@ class AuthViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    private val allowedEmailDomains = setOf(
-        "gmail.com",
-        "yahoo.com",
-        "yahoo.co.id",
-        "outlook.com",
-        "hotmail.com",
-        "mail.com",
-        "protonmail.com",
-        "icloud.com"
-    )
-
     fun onEmailChange(newEmail: String) {
         _uiState.value = _uiState.value.copy(
             email = newEmail,
@@ -54,15 +43,10 @@ class AuthViewModel : ViewModel() {
             email.isBlank() -> "Email tidak boleh kosong"
             !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
                 "Format email tidak valid"
-            !isAllowedEmailDomain(email) ->
-                "Domain email tidak diizinkan. Gunakan: ${allowedEmailDomains.joinToString(", ")}"
+            !Validators.isAllowedEmailDomain(email) ->
+                "Domain email tidak diizinkan"
             else -> null
         }
-    }
-
-    private fun isAllowedEmailDomain(email: String): Boolean {
-        val domain = email.substringAfterLast("@").lowercase()
-        return allowedEmailDomains.contains(domain)
     }
 
 
@@ -95,6 +79,10 @@ class AuthViewModel : ViewModel() {
         val state = _uiState.value
         if (!Validators.isValidEmail(state.email)) {
             _uiState.value = state.copy(emailError = "Email tidak valid")
+            return
+        }
+        if (!Validators.isAllowedEmailDomain(state.email)) {
+            _uiState.value = state.copy(emailError = "Domain email tidak diizinkan")
             return
         }
         if (!Validators.isValidPassword(state.password)) {
@@ -130,6 +118,14 @@ class AuthViewModel : ViewModel() {
             _uiState.value = state.copy(errorMessage = "Semua field harus diisi")
             return
         }
+        if (!Validators.isValidEmail(state.email)) {
+            _uiState.value = state.copy(emailError = "Format email tidak valid")
+            return
+        }
+        if (!Validators.isAllowedEmailDomain(state.email)) {
+            _uiState.value = state.copy(emailError = "Domain email tidak diizinkan")
+            return
+        }
         viewModelScope.launch {
             val result = PasswordStrengthChecker.isPasswordStrong(state.password)
             if (!result.isStrong) {
@@ -159,6 +155,10 @@ class AuthViewModel : ViewModel() {
         val state = _uiState.value
         if (!Validators.isValidEmail(state.email)) {
             _uiState.value = state.copy(emailError = "Email tidak valid")
+            return
+        }
+        if (!Validators.isAllowedEmailDomain(state.email)) {
+            _uiState.value = state.copy(emailError = "Domain email tidak diizinkan")
             return
         }
         _uiState.value = state.copy(isLoading = true, errorMessage = null)

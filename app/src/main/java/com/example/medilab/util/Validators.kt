@@ -1,8 +1,24 @@
 package com.example.medilab.util
 
 object Validators {
+    private val allowedEmailDomains = setOf(
+        "gmail.com",
+        "yahoo.com",
+        "yahoo.co.id",
+        "outlook.com",
+        "hotmail.com",
+        "mail.com",
+        "protonmail.com",
+        "icloud.com"
+    )
+
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    fun isAllowedEmailDomain(email: String): Boolean {
+        val domain = email.substringAfterLast("@").lowercase()
+        return allowedEmailDomains.contains(domain)
     }
 
     fun isValidPassword(password: String): Boolean {
@@ -17,3 +33,4 @@ object Validators {
         return fields.all { it.isNotBlank() }
     }
 }
+

@@ -121,11 +121,15 @@ private fun PetugasFormSheet(
     var noHP by remember { mutableStateOf("") }
     var submitted by remember { mutableStateOf(false) }
 
-    val emailError = if (submitted && !Validators.isValidEmail(email)) "Email tidak valid" else null
+    val emailError = when {
+        submitted && !Validators.isValidEmail(email) -> "Email tidak valid"
+        submitted && !Validators.isAllowedEmailDomain(email) -> "Domain email tidak diizinkan"
+        else -> null
+    }
     val passwordError = if (submitted && !Validators.isValidPassword(password)) "Password minimal 8 karakter" else null
     val noHPError = if (submitted && noHP.isNotBlank() && !Validators.isValidPhone(noHP)) "No HP tidak valid" else null
     val namaError = if (submitted && nama.isBlank()) "Nama harus diisi" else null
-    val isValid = Validators.isValidEmail(email) && Validators.isValidPassword(password) && nama.isNotBlank() && noHP.isNotBlank()
+    val isValid = Validators.isValidEmail(email) && Validators.isAllowedEmailDomain(email) && Validators.isValidPassword(password) && nama.isNotBlank() && noHP.isNotBlank()
 
     androidx.compose.runtime.LaunchedEffect(saving) {
         if (!saving && submitted && errorMessage == null) {
