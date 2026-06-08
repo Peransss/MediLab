@@ -2,22 +2,31 @@ package com.example.medilab.database.sync
 
 import com.example.medilab.database.AppDatabase
 import com.example.medilab.database.SyncStatus
+import com.example.medilab.database.entity.AuditLogEntity
 import com.example.medilab.database.entity.DokterEntity
 import com.example.medilab.database.entity.LaporanEntity
 import com.example.medilab.database.entity.NotifikasiEntity
 import com.example.medilab.database.entity.ObatEntity
 import com.example.medilab.database.entity.PemeriksaanEntity
+import com.example.medilab.database.entity.RekamMedisEntity
+import com.example.medilab.database.entity.RujukanEntity
 import com.example.medilab.database.entity.UserEntity
+import com.example.medilab.model.AuditLog
 import com.example.medilab.model.Dokter
 import com.example.medilab.model.Laporan
 import com.example.medilab.model.Notifikasi
 import com.example.medilab.model.Obat
 import com.example.medilab.model.Pemeriksaan
+import com.example.medilab.model.RekamMedis
+import com.example.medilab.model.Rujukan
+import com.example.medilab.repository.AuditLogRepository
 import com.example.medilab.repository.DokterRepository
 import com.example.medilab.repository.LaporanRepository
 import com.example.medilab.repository.NotifikasiRepository
 import com.example.medilab.repository.ObatRepository
 import com.example.medilab.repository.PemeriksaanRepository
+import com.example.medilab.repository.RekamMedisRepository
+import com.example.medilab.repository.RujukanRepository
 import com.example.medilab.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +41,9 @@ class SyncManager(
     private val pemeriksaanRepository: PemeriksaanRepository,
     private val obatRepository: ObatRepository,
     private val dokterRepository: DokterRepository,
+    private val rekamMedisRepository: RekamMedisRepository,
+    private val rujukanRepository: RujukanRepository,
+    private val auditLogRepository: AuditLogRepository,
     private val networkMonitor: NetworkMonitor,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
@@ -55,6 +67,9 @@ class SyncManager(
         pushPendingPemeriksaans()
         pushPendingObats()
         pushPendingDokters()
+        pushPendingRekamMedis()
+        pushPendingRujukans()
+        pushPendingAuditLogs()
     }
 
     private suspend fun pushPendingUsers() {
@@ -263,12 +278,103 @@ class SyncManager(
         }
     }
 
+    private suspend fun pushPendingRekamMedis() {
+        val pending = database.rekamMedisDao().getPendingSync()
+        for (entity in pending) {
+            when (entity.syncStatus) {
+                SyncStatus.PENDING_CREATE, SyncStatus.PENDING_UPDATE -> {
+                    val rekamMedis = RekamMedis(
+                        id = entity.id, pasienId = entity.pasienId,
+                        laporanId = entity.laporanId, diagnosa = entity.diagnosa,
+                        hasilRingkasan = entity.hasilRingkasan,
+                        rumahSakit = entity.rumahSakit, waktu = entity.waktu,
+                        createdAt = entity.createdAt
+                    )
+                    rekamMedisRepository.add(rekamMedis) { success ->
+                        if (success) scope.launch {
+                            database.rekamMedisDao().updateSyncStatus(entity.id, SyncStatus.SYNCED)
+                        }
+                    }
+                }
+                SyncStatus.PENDING_DELETE -> {
+                    rekamMedisRepository.delete(entity.id) { success ->
+                        if (success) scope.launch {
+                            database.rekamMedisDao().deleteById(entity.id)
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private suspend fun pushPendingRujukans() {
+        val pending = database.rujukanDao().getPendingSync()
+        for (entity in pending) {
+            when (entity.syncStatus) {
+                SyncStatus.PENDING_CREATE, SyncStatus.PENDING_UPDATE -> {
+                    val rujukan = Rujukan(
+                        id = entity.id, pasienId = entity.pasienId,
+                        dokterId = entity.dokterId, pemeriksaanId = entity.pemeriksaanId,
+                        catatan = entity.catatan, createdAt = entity.createdAt,
+                        status = entity.status
+                    )
+                    rujukanRepository.add(rujukan) { success ->
+                        if (success) scope.launch {
+                            database.rujukanDao().updateSyncStatus(entity.id, SyncStatus.SYNCED)
+                        }
+                    }
+                }
+                SyncStatus.PENDING_DELETE -> {
+                    rujukanRepository.delete(entity.id) { success ->
+                        if (success) scope.launch {
+                            database.rujukanDao().deleteById(entity.id)
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private suspend fun pushPendingAuditLogs() {
+        val pending = database.auditLogDao().getPendingSync()
+        for (entity in pending) {
+            when (entity.syncStatus) {
+                SyncStatus.PENDING_CREATE, SyncStatus.PENDING_UPDATE -> {
+                    val auditLog = AuditLog(
+                        id = entity.id, userId = entity.userId,
+                        aksi = entity.aksi, targetId = entity.targetId,
+                        targetTipe = entity.targetTipe, detail = entity.detail,
+                        timestamp = entity.timestamp
+                    )
+                    auditLogRepository.add(auditLog) { success ->
+                        if (success) scope.launch {
+                            database.auditLogDao().updateSyncStatus(entity.id, SyncStatus.SYNCED)
+                        }
+                    }
+                }
+                SyncStatus.PENDING_DELETE -> {
+                    auditLogRepository.delete(entity.id) { success ->
+                        if (success) scope.launch {
+                            database.auditLogDao().deleteById(entity.id)
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
     suspend fun pullRemoteChanges() {
         pullUpdatedUsers()
         pullUpdatedLaporans()
         pullUpdatedPemeriksaans()
         pullUpdatedObats()
         pullUpdatedDokters()
+        pullUpdatedRekamMedis()
+        pullUpdatedRujukans()
+        pullUpdatedAuditLogs()
         lastSyncTimestamp = System.currentTimeMillis()
     }
 
@@ -364,6 +470,61 @@ class SyncManager(
                     )
                 }
                 database.dokterDao().upsertAll(entities)
+            }
+        }
+    }
+
+    private suspend fun pullUpdatedRekamMedis() {
+        rekamMedisRepository.getAll { items ->
+            scope.launch {
+                val entities = items.map { r ->
+                    RekamMedisEntity(
+                        id = r.id, pasienId = r.pasienId,
+                        laporanId = r.laporanId, diagnosa = r.diagnosa,
+                        hasilRingkasan = r.hasilRingkasan,
+                        rumahSakit = r.rumahSakit, waktu = r.waktu,
+                        createdAt = r.createdAt,
+                        syncStatus = SyncStatus.SYNCED,
+                        lastModifiedAt = System.currentTimeMillis()
+                    )
+                }
+                database.rekamMedisDao().upsertAll(entities)
+            }
+        }
+    }
+
+    private suspend fun pullUpdatedRujukans() {
+        rujukanRepository.getAll { items ->
+            scope.launch {
+                val entities = items.map { r ->
+                    RujukanEntity(
+                        id = r.id, pasienId = r.pasienId,
+                        dokterId = r.dokterId, pemeriksaanId = r.pemeriksaanId,
+                        catatan = r.catatan, createdAt = r.createdAt,
+                        status = r.status,
+                        syncStatus = SyncStatus.SYNCED,
+                        lastModifiedAt = System.currentTimeMillis()
+                    )
+                }
+                database.rujukanDao().upsertAll(entities)
+            }
+        }
+    }
+
+    private suspend fun pullUpdatedAuditLogs() {
+        auditLogRepository.getAll { items ->
+            scope.launch {
+                val entities = items.map { a ->
+                    AuditLogEntity(
+                        id = a.id, userId = a.userId,
+                        aksi = a.aksi, targetId = a.targetId,
+                        targetTipe = a.targetTipe, detail = a.detail,
+                        timestamp = a.timestamp,
+                        syncStatus = SyncStatus.SYNCED,
+                        lastModifiedAt = System.currentTimeMillis()
+                    )
+                }
+                database.auditLogDao().upsertAll(entities)
             }
         }
     }

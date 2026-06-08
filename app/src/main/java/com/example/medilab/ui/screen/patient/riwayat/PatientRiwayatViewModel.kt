@@ -2,39 +2,38 @@ package com.example.medilab.ui.screen.patient.riwayat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medilab.MediLabApp
+import com.example.medilab.database.entity.RekamMedisEntity
+import com.example.medilab.database.repository.LocalRekamMedisRepository
 import com.example.medilab.model.RekamMedis
 import com.example.medilab.repository.AuthRepository
 import com.example.medilab.ui.util.UiState
-import com.example.medilab.util.Constants
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class PatientRiwayatViewModel : ViewModel() {
     private val authRepo = AuthRepository()
-    private val firestore = FirebaseFirestore.getInstance()
-    private val _uiState = MutableStateFlow<UiState<List<RekamMedis>>>(UiState.Loading)
-    val uiState: StateFlow<UiState<List<RekamMedis>>> = _uiState.asStateFlow()
+    private val uid = authRepo.getCurrentUid()
 
-    fun load() {
-        _uiState.value = UiState.Loading
-        val uid = authRepo.getCurrentUid()
-        if (uid.isEmpty()) {
-            _uiState.value = UiState.Empty
-            return
-        }
-        viewModelScope.launch {
-            firestore.collection(Constants.COLLECTION_REKAM_MEDIS)
-                .whereEqualTo("pasienId", uid)
-                .get()
-                .addOnSuccessListener { snap ->
-                    val list = snap.documents.mapNotNull { it.toObject(RekamMedis::class.java) }
-                        .sortedByDescending { it.createdAt }
-                    _uiState.value = if (list.isEmpty()) UiState.Empty else UiState.Success(list)
-                }
-                .addOnFailureListener { _uiState.value = UiState.Error(it.message ?: "Gagal memuat") }
-        }
+    val uiState: StateFlow<UiState<List<RekamMedis>>> = if (uid.isEmpty()) {
+        kotlinx.coroutines.flow.MutableStateFlow(UiState.Empty).asStateFlow()
+    } else {
+        LocalRekamMedisRepository(MediLabApp.instance.database, MediLabApp.instance.syncManager)
+            .getByPasienId(uid)
+            .map { entities ->
+                if (entities.isEmpty()) UiState.Empty
+                else UiState.Success(entities.map { it.toModel() })
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
     }
 }
+
+private fun RekamMedisEntity.toModel() = RekamMedis(
+    id = id, pasienId = pasienId, laporanId = laporanId,
+    diagnosa = diagnosa, hasilRingkasan = hasilRingkasan,
+    rumahSakit = rumahSakit, waktu = waktu, createdAt = createdAt
+)

@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -33,7 +32,6 @@ fun PatientRiwayatScreen(
     viewModel: PatientRiwayatViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.load() }
 
     Scaffold(
         topBar = { MediLabTopAppBar(title = "Riwayat Rekam Medis") }
@@ -41,7 +39,7 @@ fun PatientRiwayatScreen(
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (val s = state) {
                 is UiState.Loading -> LoadingState()
-                is UiState.Error -> ErrorState(s.message, viewModel::load)
+                is UiState.Error -> ErrorState(s.message, onRetry = {})
                 is UiState.Empty -> EmptyState(
                     title = "Belum ada riwayat",
                     description = "Riwayat rekam medis Anda akan tampil di sini.",
