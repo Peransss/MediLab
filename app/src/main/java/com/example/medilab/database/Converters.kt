@@ -2,6 +2,7 @@ package com.example.medilab.database
 
 import androidx.room.TypeConverter
 import com.example.medilab.model.HasilParameter
+import com.example.medilab.model.ParameterTes
 import com.example.medilab.model.ResepItem
 import com.example.medilab.model.RumahSakit
 import com.google.gson.Gson
@@ -34,6 +35,15 @@ class Converters {
     @TypeConverter
     fun toRumahSakit(value: String): RumahSakit {
         return gson.fromJson(value, RumahSakit::class.java) ?: RumahSakit()
+    }
+
+    @TypeConverter
+    fun fromParameterTesList(value: List<ParameterTes>): String = gson.toJson(value)
+
+    @TypeConverter
+    fun toParameterTesList(value: String): List<ParameterTes> {
+        val type = object : TypeToken<List<ParameterTes>>() {}.type
+        return gson.fromJson(value, type) ?: emptyList()
     }
 
     @TypeConverter
