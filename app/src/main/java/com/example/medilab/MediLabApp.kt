@@ -8,6 +8,10 @@ import com.example.medilab.database.sync.SyncWorker
 import com.example.medilab.repository.LaporanRepository
 import com.example.medilab.repository.NotifikasiRepository
 import com.example.medilab.repository.UserRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class MediLabApp : Application() {
     lateinit var database: AppDatabase
@@ -16,6 +20,8 @@ class MediLabApp : Application() {
         private set
     lateinit var syncManager: SyncManager
         private set
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -31,6 +37,13 @@ class MediLabApp : Application() {
         )
         SyncWorker.schedule(this)
         syncManager.startListening()
+
+        // Seed data from Firestore on first launch
+        scope.launch {
+            if (database.userDao().count() == 0) {
+                syncManager.pullRemoteChanges()
+            }
+        }
     }
 
     companion object {
