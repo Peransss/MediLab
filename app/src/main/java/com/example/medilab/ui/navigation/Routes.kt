@@ -24,6 +24,7 @@ sealed class Route(val path: String) {
     object PatientRoot : Route("patient")
     object PatientHome : Route("patient/home")
     object PatientHasil : Route("patient/hasil")
+    object PatientBooking : Route("patient/booking") // ✅ baru
     object PatientRiwayat : Route("patient/riwayat")
     object PatientNotifikasi : Route("patient/notifikasi")
     object PatientProfile : Route("patient/profile")

@@ -16,9 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.medilab.ui.component.BottomNavItems
 import com.example.medilab.ui.component.MediLabBottomBar
 import com.example.medilab.ui.navigation.Route
+import com.example.medilab.ui.screen.patient.hasil.PatientBookingScreen
 import com.example.medilab.ui.screen.patient.hasil.PatientHasilScreen
 import com.example.medilab.ui.screen.patient.home.PatientHomeScreen
-import com.example.medilab.ui.screen.patient.laporan.LaporanDetailScreen
 import com.example.medilab.ui.screen.patient.notifikasi.PatientNotifikasiScreen
 import com.example.medilab.ui.screen.patient.profile.PatientProfileScreen
 import com.example.medilab.ui.screen.patient.riwayat.PatientRiwayatScreen
@@ -50,7 +50,9 @@ fun PatientRootScreen(rootNavController: NavHostController, darkModeViewModel: D
         NavHost(
             navController = navController,
             startDestination = Route.PatientHome.path,
-            modifier = Modifier.fillMaxSize().padding(padding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
             composable(Route.PatientHome.path) {
                 PatientHomeScreen(
@@ -61,7 +63,16 @@ fun PatientRootScreen(rootNavController: NavHostController, darkModeViewModel: D
                 )
             }
             composable(Route.PatientHasil.path) {
-                PatientHasilScreen(onLaporanClick = { id -> rootNavController.navigate(Route.LaporanDetail.build(id)) })
+                PatientHasilScreen(
+                    onLaporanClick = { id -> rootNavController.navigate(Route.LaporanDetail.build(id)) },
+                    onBookingClick = { navController.navigate(Route.PatientBooking.path) }
+                )
+            }
+            composable(Route.PatientBooking.path) {
+                PatientBookingScreen(
+                    onBack = { navController.popBackStack() },
+                    onSuccess = { navController.popBackStack() }
+                )
             }
             composable(Route.PatientRiwayat.path) {
                 PatientRiwayatScreen(onItemClick = { id -> rootNavController.navigate(Route.LaporanDetail.build(id)) })
