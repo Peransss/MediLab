@@ -27,6 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.medilab.database.entity.LaporanEntity
+import com.example.medilab.database.entity.NotifikasiEntity
+import com.example.medilab.model.Laporan
+import com.example.medilab.model.Notifikasi
 import com.example.medilab.ui.component.EmptyState
 import com.example.medilab.ui.component.ErrorState
 import com.example.medilab.ui.component.LaporanCard
@@ -125,10 +129,10 @@ fun PatientHomeScreen(
                             )
                         }
                     } else {
-                        items(data.recentLaporan) { laporan ->
+                        items(data.recentLaporan) { entity ->
                             LaporanCard(
-                                laporan = laporan,
-                                onClick = { onLaporanClick(laporan.id) }
+                                laporan = entity.toModel(),
+                                onClick = { onLaporanClick(entity.id) }
                             )
                         }
                     }
@@ -162,8 +166,8 @@ fun PatientHomeScreen(
                             )
                         }
                     } else {
-                        items(data.notifikasi) { notif ->
-                            NotifikasiItem(notifikasi = notif, onClick = onNotificationClick)
+                        items(data.notifikasi) { entity ->
+                            NotifikasiItem(notifikasi = entity.toModel(), onClick = onNotificationClick)
                         }
                     }
                 }
@@ -171,3 +175,17 @@ fun PatientHomeScreen(
         }
     }
 }
+
+private fun LaporanEntity.toModel() = Laporan(
+    id = id, status = status, pasienId = pasienId, dokterId = dokterId,
+    petugasId = petugasId, adminId = adminId, pemeriksaanId = pemeriksaanId,
+    rujukanId = rujukanId, hasilParameter = hasilParameter, diagnosa = diagnosa,
+    resepObat = resepObat, catatanRevisi = catatanRevisi, alasanTolak = alasanTolak,
+    rumahSakit = rumahSakit, createdAt = createdAt, updatedAt = updatedAt,
+    tanggalSelesai = tanggalSelesai
+)
+
+private fun NotifikasiEntity.toModel() = Notifikasi(
+    id = id, userId = userId, judul = judul, pesan = pesan,
+    dibaca = dibaca, createdAt = createdAt, tipe = tipe
+)
