@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.medilab.model.Laporan
+import com.example.medilab.database.entity.LaporanEntity
 import com.example.medilab.ui.component.MediLabButton
 import com.example.medilab.ui.component.MediLabButtonVariant
 import com.example.medilab.ui.component.MediLabCard
@@ -93,7 +93,7 @@ fun StaffLaporanDetailScreen(
 }
 
 @Composable
-private fun HeaderCard(l: Laporan) {
+private fun HeaderCard(l: LaporanEntity) {
     MediLabCard {
         Column(modifier = Modifier.padding(Spacing.lg)) {
             Text("Laporan ${l.id}", style = MaterialTheme.typography.titleLarge)
@@ -120,7 +120,7 @@ private fun InfoCard(title: String, fields: List<Pair<String, String>>) {
 }
 
 @Composable
-private fun ParameterCard(l: Laporan) {
+private fun ParameterCard(l: LaporanEntity) {
     MediLabCard {
         Column(modifier = Modifier.padding(Spacing.lg)) {
             Text("Parameter Hasil", style = MaterialTheme.typography.titleMedium)
@@ -146,7 +146,7 @@ private fun ParameterCard(l: Laporan) {
 }
 
 @Composable
-private fun ResepCard(l: Laporan) {
+private fun ResepCard(l: LaporanEntity) {
     if (l.resepObat.isEmpty()) return
     MediLabCard {
         Column(modifier = Modifier.padding(Spacing.lg)) {

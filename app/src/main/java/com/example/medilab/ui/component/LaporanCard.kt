@@ -12,11 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.medilab.model.Laporan
+import com.example.medilab.database.entity.LaporanEntity
 import com.example.medilab.ui.theme.Spacing
 
 @Composable
-fun LaporanCard(laporan: Laporan, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun LaporanCard(laporan: LaporanEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
     MediLabCard(modifier = modifier, onClick = onClick) {
         Row(
             modifier = Modifier

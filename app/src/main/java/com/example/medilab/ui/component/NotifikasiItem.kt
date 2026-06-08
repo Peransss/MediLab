@@ -15,10 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.medilab.model.Notifikasi
+import com.example.medilab.database.entity.NotifikasiEntity
 
 @Composable
-fun NotifikasiItem(notifikasi: Notifikasi, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun NotifikasiItem(notifikasi: NotifikasiEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
     MediLabCard(modifier = modifier, onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

@@ -131,7 +131,7 @@ fun PatientHomeScreen(
                     } else {
                         items(data.recentLaporan) { entity ->
                             LaporanCard(
-                                laporan = entity.toModel(),
+                                laporan = entity,
                                 onClick = { onLaporanClick(entity.id) }
                             )
                         }
@@ -167,7 +167,7 @@ fun PatientHomeScreen(
                         }
                     } else {
                         items(data.notifikasi) { entity ->
-                            NotifikasiItem(notifikasi = entity.toModel(), onClick = onNotificationClick)
+                            NotifikasiItem(notifikasi = entity, onClick = onNotificationClick)
                         }
                     }
                 }
@@ -176,16 +176,4 @@ fun PatientHomeScreen(
     }
 }
 
-private fun LaporanEntity.toModel() = Laporan(
-    id = id, status = status, pasienId = pasienId, dokterId = dokterId,
-    petugasId = petugasId, adminId = adminId, pemeriksaanId = pemeriksaanId,
-    rujukanId = rujukanId, hasilParameter = hasilParameter, diagnosa = diagnosa,
-    resepObat = resepObat, catatanRevisi = catatanRevisi, alasanTolak = alasanTolak,
-    rumahSakit = rumahSakit, createdAt = createdAt, updatedAt = updatedAt,
-    tanggalSelesai = tanggalSelesai
-)
 
-private fun NotifikasiEntity.toModel() = Notifikasi(
-    id = id, userId = userId, judul = judul, pesan = pesan,
-    dibaca = dibaca, createdAt = createdAt, tipe = tipe
-)
