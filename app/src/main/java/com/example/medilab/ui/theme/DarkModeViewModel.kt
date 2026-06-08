@@ -8,11 +8,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.datastore.preferences.core.emptyPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 val Application.darkModeDataStore: DataStore<Preferences> by preferencesDataStore(name = "dark_mode_prefs")
 
@@ -20,6 +23,10 @@ class DarkModeViewModel(application: Application) : AndroidViewModel(application
     private val dataStore = application.darkModeDataStore
 
     val isDarkMode: StateFlow<Boolean> = dataStore.data
+        .catch { e ->
+            if (e is IOException) emit(emptyPreferences())
+            else throw e
+        }
         .map { it[KEY_DARK_MODE] ?: false }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
