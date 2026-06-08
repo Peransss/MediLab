@@ -35,4 +35,10 @@ class Converters {
     fun toRumahSakit(value: String): RumahSakit {
         return gson.fromJson(value, RumahSakit::class.java) ?: RumahSakit()
     }
+
+    @TypeConverter
+    fun fromSyncStatus(value: SyncStatus): String = value.name
+
+    @TypeConverter
+    fun toSyncStatus(value: String): SyncStatus = SyncStatus.valueOf(value)
 }
