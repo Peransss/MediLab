@@ -20,12 +20,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ManageViewModel : ViewModel() {
-    private val app = MediLabApp.instance
+    private val app by lazy { MediLabApp.instance }
     private val userRepo = UserRepository()
     private val localDokterRepo = LocalDokterRepository(app.database, app.syncManager)
     private val localPemeriksaanRepo = LocalPemeriksaanRepository(app.database, app.syncManager)
@@ -42,6 +43,7 @@ class ManageViewModel : ViewModel() {
             if (entities.isEmpty()) UiState.Empty
             else UiState.Success(entities.map { it.toModel() })
         }
+        .catch { e -> emit(UiState.Error("Gagal memuat dokter: ${e.message}")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
     val pemeriksaan: StateFlow<UiState<List<Pemeriksaan>>> = localPemeriksaanRepo.getAll()
@@ -49,6 +51,7 @@ class ManageViewModel : ViewModel() {
             if (entities.isEmpty()) UiState.Empty
             else UiState.Success(entities.map { it.toModel() })
         }
+        .catch { e -> emit(UiState.Error("Gagal memuat tes: ${e.message}")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
     val obat: StateFlow<UiState<List<Obat>>> = localObatRepo.getAll()
@@ -56,6 +59,7 @@ class ManageViewModel : ViewModel() {
             if (entities.isEmpty()) UiState.Empty
             else UiState.Success(entities.map { it.toModel() })
         }
+        .catch { e -> emit(UiState.Error("Gagal memuat obat: ${e.message}")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
     fun loadPasien() {

@@ -26,7 +26,7 @@ import com.example.medilab.database.entity.UserEntity
 
 @Database(
     entities = [AuditLogEntity::class, DokterEntity::class, LaporanEntity::class, NotifikasiEntity::class, ObatEntity::class, PemeriksaanEntity::class, RekamMedisEntity::class, RujukanEntity::class, UserEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

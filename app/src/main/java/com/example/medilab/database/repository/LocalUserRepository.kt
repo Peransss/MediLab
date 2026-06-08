@@ -9,13 +9,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 
 class LocalUserRepository(
     private val database: AppDatabase,
     private val syncManager: SyncManager
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = CoroutineExceptionHandler { _, e -> android.util.Log.e("LocalRepo", "Sync error", e) }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private val dao = database.userDao()
 
     fun getAll(): Flow<List<UserEntity>> = dao.getAll()

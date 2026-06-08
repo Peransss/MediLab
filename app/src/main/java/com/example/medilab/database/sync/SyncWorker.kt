@@ -15,7 +15,7 @@ class SyncWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val app = applicationContext as MediLabApp
+        val app = applicationContext as? MediLabApp ?: return Result.retry()
         val syncManager = app.syncManager
         return try {
             syncManager.pushPendingChanges()

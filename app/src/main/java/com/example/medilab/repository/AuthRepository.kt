@@ -119,7 +119,7 @@ class AuthRepository {
     }
 
     private fun generateNoRM(): String {
-        val timestamp = System.currentTimeMillis() % 100000
-        return "RM-$timestamp"
+        val uuid = java.util.UUID.randomUUID().toString().take(8)
+        return "RM-${System.currentTimeMillis() % 100000}-$uuid"
     }
 }

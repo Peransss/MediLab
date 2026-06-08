@@ -55,10 +55,9 @@ class MediLabApp : Application() {
         SyncWorker.schedule(this)
         syncManager.startListening()
 
-        // Seed data from Firestore on first launch
+        // Seed staff accounts on first launch
         scope.launch {
             if (database.userDao().count() == 0) {
-                syncManager.pullRemoteChanges()
                 seedStaffAccounts()
             }
         }

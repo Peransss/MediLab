@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PatientHasilViewModel : ViewModel() {
-    private val app = MediLabApp.instance
+    private val app by lazy { MediLabApp.instance }
     private val authRepo = AuthRepository()
     private val localLaporanRepo = LocalLaporanRepository(app.database, app.syncManager)
     private val _uiState = MutableStateFlow<UiState<List<LaporanEntity>>>(UiState.Loading)

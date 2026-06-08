@@ -16,13 +16,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class PatientRiwayatViewModel : ViewModel() {
+    private val app by lazy { MediLabApp.instance }
     private val authRepo = AuthRepository()
     private val uid = authRepo.getCurrentUid()
 
     val uiState: StateFlow<UiState<List<RekamMedis>>> = if (uid.isEmpty()) {
         kotlinx.coroutines.flow.MutableStateFlow(UiState.Empty).asStateFlow()
     } else {
-        LocalRekamMedisRepository(MediLabApp.instance.database, MediLabApp.instance.syncManager)
+        LocalRekamMedisRepository(app.database, app.syncManager)
             .getByPasienId(uid)
             .map { entities ->
                 if (entities.isEmpty()) UiState.Empty

@@ -29,7 +29,7 @@ data class PatientHomeData(
 )
 
 class PatientHomeViewModel : ViewModel() {
-    private val app = MediLabApp.instance
+    private val app by lazy { MediLabApp.instance }
     private val authRepo = AuthRepository()
     private val localUserRepo = LocalUserRepository(app.database, app.syncManager)
     private val localLaporanRepo = LocalLaporanRepository(app.database, app.syncManager)

@@ -2,16 +2,14 @@ package com.example.medilab.ui.screen.staff.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AssignmentTurnedIn
-import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +53,7 @@ fun StaffHomeScreen(
             is UiState.Error -> ErrorState(s.message, viewModel::load)
             is UiState.Empty -> EmptyState(title = "Belum ada data")
             is UiState.Success -> LazyColumn(
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(Spacing.lg),
+                contentPadding = PaddingValues(Spacing.lg),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 item {
@@ -73,37 +71,27 @@ fun StaffHomeScreen(
                 }
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                        StatCard(
-                            value = s.data.countBaru.toString(),
-                            label = "Baru",
-                            icon = Icons.Default.PostAdd,
-                            modifier = Modifier.weight(1f)
-                        )
-                        StatCard(
-                            value = s.data.countProses.toString(),
-                            label = "Proses",
-                            icon = Icons.Default.HourglassEmpty,
-                            modifier = Modifier.weight(1f)
-                        )
-                        StatCard(
-                            value = s.data.countSelesai.toString(),
-                            label = "Selesai",
-                            icon = Icons.Default.AssignmentTurnedIn,
-                            modifier = Modifier.weight(1f)
-                        )
+                        s.data.statCards.forEach { card ->
+                            StatCard(
+                                value = card.value,
+                                label = card.label,
+                                icon = card.icon,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
-                item { SectionHeader(title = "Perlu Verifikasi") }
-                if (s.data.pendingVerifikasi.isEmpty()) {
+                item { SectionHeader(title = s.data.pendingTitle) }
+                if (s.data.pendingItems.isEmpty()) {
                     item {
                         Text(
-                            text = "Tidak ada yang perlu diverifikasi",
+                            text = s.data.pendingEmptyText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 } else {
-                    items(s.data.pendingVerifikasi) { laporan ->
+                    items(s.data.pendingItems) { laporan ->
                         LaporanCard(laporan = laporan, onClick = { onLaporanClick(laporan.id) })
                     }
                 }

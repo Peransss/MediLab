@@ -32,6 +32,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class SyncManager(
     private val database: AppDatabase,
@@ -47,7 +49,9 @@ class SyncManager(
     private val networkMonitor: NetworkMonitor,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
+    @Volatile
     var lastSyncTimestamp: Long = 0L
+    private val syncMutex = Mutex()
 
     fun startListening() {
         scope.launch {
@@ -61,6 +65,7 @@ class SyncManager(
     }
 
     suspend fun pushPendingChanges() {
+        syncMutex.withLock {
         pushPendingUsers()
         pushPendingLaporans()
         pushPendingNotifikasis()
@@ -70,6 +75,7 @@ class SyncManager(
         pushPendingRekamMedis()
         pushPendingRujukans()
         pushPendingAuditLogs()
+        }
     }
 
     private suspend fun pushPendingUsers() {
@@ -367,6 +373,7 @@ class SyncManager(
     }
 
     suspend fun pullRemoteChanges() {
+        syncMutex.withLock {
         pullUpdatedUsers()
         pullUpdatedLaporans()
         pullUpdatedPemeriksaans()
@@ -376,6 +383,7 @@ class SyncManager(
         pullUpdatedRujukans()
         pullUpdatedAuditLogs()
         lastSyncTimestamp = System.currentTimeMillis()
+        }
     }
 
     private suspend fun pullUpdatedUsers() {

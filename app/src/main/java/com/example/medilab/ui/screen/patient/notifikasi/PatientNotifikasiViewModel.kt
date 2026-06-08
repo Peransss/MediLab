@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PatientNotifikasiViewModel : ViewModel() {
-    private val app = MediLabApp.instance
+    private val app by lazy { MediLabApp.instance }
     private val authRepo = AuthRepository()
     private val localNotifikasiRepo = LocalNotifikasiRepository(app.database, app.syncManager)
     private val _uiState = MutableStateFlow<UiState<List<NotifikasiEntity>>>(UiState.Loading)

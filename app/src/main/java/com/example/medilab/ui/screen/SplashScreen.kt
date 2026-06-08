@@ -12,12 +12,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,27 +34,32 @@ import com.example.medilab.ui.illustration.EmptyLabIllustration
 import com.example.medilab.ui.navigation.Route
 import com.example.medilab.ui.navigation.SharedNavigationViewModel
 import com.example.medilab.util.Constants
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(sharedNavigationViewModel: SharedNavigationViewModel = viewModel()) {
     val authRepo = AuthRepository()
     val userRepo = UserRepository()
+    var isLoading by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(2500) // Auto-navigates after 2.5 seconds
+        delay(2500)
         val uid = authRepo.getCurrentUid()
         if (uid.isEmpty()) {
             sharedNavigationViewModel.navigateTo(Route.Onboarding1.path)
             return@LaunchedEffect
         }
-        userRepo.getUser(uid) { user ->
-            val target = when (user?.role) {
-                Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
-                Constants.ROLE_PASIEN -> Route.PatientRoot.path
-                else -> Route.Login.path
-            }
-            sharedNavigationViewModel.navigateTo(target, popUpTo = "0", inclusive = true)
+        isLoading = true
+        val deferred = CompletableDeferred<com.example.medilab.model.User?>()
+        userRepo.getUser(uid) { user -> deferred.complete(user) }
+        val user = deferred.await()
+        isLoading = false
+        val target = when (user?.role) {
+            Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
+            Constants.ROLE_PASIEN -> Route.PatientRoot.path
+            else -> Route.Login.path
         }
+        sharedNavigationViewModel.navigateTo(target, popUpTo = Route.Splash.path, inclusive = true)
     }
     
     Box(
@@ -118,6 +129,17 @@ fun SplashScreen(sharedNavigationViewModel: SharedNavigationViewModel = viewMode
                     .size(8.dp)
                     .background(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), shape = CircleShape)
             )
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
         }
     }
 }

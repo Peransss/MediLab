@@ -128,7 +128,7 @@ fun RegisterScreen(
                 }
             }
             if (state.errorMessage != null) {
-                Text(state.errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                Text(state.errorMessage ?: "Terjadi kesalahan", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(Spacing.sm))
             }
             MediLabButton(
