@@ -80,9 +80,9 @@ class MediLabApp : Application() {
         )
 
         val accounts = listOf(
-            StaffAccount("admin@medilab.com", "admin123", "Admin MediLab", Constants.ROLE_ADMIN, "081234567890"),
-            StaffAccount("petugas@medilab.com", "petugas123", "Petugas MediLab", Constants.ROLE_PETUGAS, "081234567891"),
-            StaffAccount("dokter@medilab.com", "dokter123", "Dokter MediLab", Constants.ROLE_DOKTER, "081234567892")
+            StaffAccount("medilab.admin@gmail.com", "admin123", "Admin MediLab", Constants.ROLE_ADMIN, "081234567890"),
+            StaffAccount("medilab.petugas@gmail.com", "petugas123", "Petugas MediLab", Constants.ROLE_PETUGAS, "081234567891"),
+            StaffAccount("medilab.dokter@gmail.com", "dokter123", "Dokter MediLab", Constants.ROLE_DOKTER, "081234567892")
         )
 
         for (acc in accounts) {
