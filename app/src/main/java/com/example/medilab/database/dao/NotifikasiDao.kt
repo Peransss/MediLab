@@ -7,6 +7,6 @@ import com.example.medilab.database.entity.NotifikasiEntity
 
 @Dao
 interface NotifikasiDao {
-    @Query("SELECT * FROM notifikasis")
+    @Query("SELECT * FROM notifikasi")
     fun getAll(): LiveData<List<NotifikasiEntity>>
 }
