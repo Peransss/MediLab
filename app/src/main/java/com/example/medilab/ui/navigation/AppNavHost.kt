@@ -14,6 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.medilab.repository.AuthRepository
 import com.example.medilab.repository.UserRepository
+import com.example.medilab.ui.component.ErrorState
+import com.example.medilab.ui.component.LoadingState
 import com.example.medilab.ui.screen.SplashScreen
 import com.example.medilab.ui.screen.auth.ForgotPasswordScreen
 import com.example.medilab.ui.screen.auth.LoginScreen
@@ -108,18 +110,33 @@ private fun StaffLaporanDetailRoute(
     val authRepo = remember { AuthRepository() }
     val userRepo = remember { UserRepository() }
     var userRole by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         val uid = authRepo.getCurrentUid()
-        if (uid.isNotEmpty()) {
-            userRepo.getUser(uid) { user -> userRole = user?.role ?: "" }
+        if (uid.isEmpty()) {
+            error = true
+            isLoading = false
+            return@LaunchedEffect
+        }
+        userRepo.getUser(uid) { user ->
+            userRole = user?.role ?: ""
+            isLoading = false
+            if (user == null) error = true
         }
     }
-    val role = userRole
-    if (role != null) {
-        StaffLaporanDetailScreen(
+
+    when {
+        isLoading -> LoadingState()
+        error -> ErrorState(
+            message = "Gagal memuat data user",
+            onRetry = { }
+        )
+        else -> StaffLaporanDetailScreen(
             laporanId = laporanId,
             onBack = onBack,
-            userRole = role
+            userRole = userRole ?: ""
         )
     }
 }
