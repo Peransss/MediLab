@@ -5,6 +5,7 @@ import com.example.medilab.database.AppDatabase
 import com.example.medilab.database.sync.NetworkMonitor
 import com.example.medilab.database.sync.SyncManager
 import com.example.medilab.database.sync.SyncWorker
+import com.example.medilab.model.User
 import com.example.medilab.repository.AuditLogRepository
 import com.example.medilab.repository.DokterRepository
 import com.example.medilab.repository.LaporanRepository
@@ -14,6 +15,10 @@ import com.example.medilab.repository.PemeriksaanRepository
 import com.example.medilab.repository.RekamMedisRepository
 import com.example.medilab.repository.RujukanRepository
 import com.example.medilab.repository.UserRepository
+import com.example.medilab.util.Constants
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -54,7 +59,42 @@ class MediLabApp : Application() {
         scope.launch {
             if (database.userDao().count() == 0) {
                 syncManager.pullRemoteChanges()
+                seedStaffAccounts()
             }
+        }
+    }
+
+    private fun seedStaffAccounts() {
+        val secondaryApp = try {
+            FirebaseApp.getInstance("staffSeed")
+        } catch (_: IllegalStateException) {
+            val options = FirebaseApp.getInstance().options
+            FirebaseApp.initializeApp(applicationContext, options, "staffSeed")
+        }
+        val secondaryAuth = FirebaseAuth.getInstance(secondaryApp)
+        val secondaryDb = FirebaseFirestore.getInstance(secondaryApp)
+
+        data class StaffAccount(
+            val email: String, val password: String,
+            val nama: String, val role: String, val noHP: String
+        )
+
+        val accounts = listOf(
+            StaffAccount("admin@medilab.com", "admin123", "Admin MediLab", Constants.ROLE_ADMIN, "081234567890"),
+            StaffAccount("petugas@medilab.com", "petugas123", "Petugas MediLab", Constants.ROLE_PETUGAS, "081234567891"),
+            StaffAccount("dokter@medilab.com", "dokter123", "Dokter MediLab", Constants.ROLE_DOKTER, "081234567892")
+        )
+
+        for (acc in accounts) {
+            secondaryAuth.createUserWithEmailAndPassword(acc.email, acc.password)
+                .addOnSuccessListener { result ->
+                    val uid = result.user?.uid ?: return@addOnSuccessListener
+                    val user = User(
+                        id = uid, nama = acc.nama, email = acc.email,
+                        role = acc.role, noHP = acc.noHP
+                    )
+                    secondaryDb.collection(Constants.COLLECTION_USERS).document(uid).set(user)
+                }
         }
     }
 
