@@ -39,7 +39,14 @@ data class Laporan(
     val catatanRevisi: String = "",
     val alasanTolak: String = "",
     val rumahSakit: RumahSakit = RumahSakit(),
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Any = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val tanggalSelesai: Long = 0L
-)
+) {
+    val createdAtMillis: Long get() = when (val ca = createdAt) {
+        is Long -> ca
+        is String -> ca.toLongOrNull() ?: System.currentTimeMillis()
+        is Number -> ca.toLong()
+        else -> System.currentTimeMillis()
+    }
+}

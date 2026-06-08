@@ -6,6 +6,13 @@ data class Rujukan(
     val dokterId: String = "",
     val pemeriksaanId: String = "",
     val catatan: String = "",
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Any = System.currentTimeMillis(),
     val status: String = "diterima"
-)
+) {
+    val createdAtMillis: Long get() = when (val ca = createdAt) {
+        is Long -> ca
+        is String -> ca.toLongOrNull() ?: System.currentTimeMillis()
+        is Number -> ca.toLong()
+        else -> System.currentTimeMillis()
+    }
+}

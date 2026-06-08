@@ -144,7 +144,7 @@ fun PatientProfileScreen(
                                     }
                                     Spacer(Modifier.height(4.dp))
                                     Text(
-                                        text = "Member sejak ${DateUtils.formatDateOnly(Date(user.createdAt))}",
+                                        text = "Member sejak ${DateUtils.formatDateOnly(Date(user.createdAtMillis))}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

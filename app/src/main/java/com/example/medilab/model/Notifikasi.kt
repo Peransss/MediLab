@@ -6,6 +6,13 @@ data class Notifikasi(
     val judul: String = "",
     val pesan: String = "",
     val dibaca: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Any = System.currentTimeMillis(),
     val tipe: String = ""
-)
+) {
+    val createdAtMillis: Long get() = when (val ca = createdAt) {
+        is Long -> ca
+        is String -> ca.toLongOrNull() ?: System.currentTimeMillis()
+        is Number -> ca.toLong()
+        else -> System.currentTimeMillis()
+    }
+}

@@ -424,8 +424,8 @@ class SyncManager(
                     id = it.id, nama = it.nama, email = it.email,
                     role = it.role, noHP = it.noHP, alamat = it.alamat,
                     fotoProfile = it.fotoProfile, noRekamMedis = it.noRekamMedis,
-                    tanggalLahir = it.tanggalLahir, createdAt = it.createdAt,
-                    syncStatus = SyncStatus.SYNCED, lastModifiedAt = it.createdAt
+                    tanggalLahir = it.tanggalLahir, createdAt = it.createdAtMillis,
+                    syncStatus = SyncStatus.SYNCED, lastModifiedAt = it.createdAtMillis
                 )
             }
             if (entity != null) {
@@ -454,8 +454,8 @@ class SyncManager(
                         id = user.id, nama = user.nama, email = user.email,
                         role = user.role, noHP = user.noHP, alamat = user.alamat,
                         fotoProfile = user.fotoProfile, noRekamMedis = user.noRekamMedis,
-                        tanggalLahir = user.tanggalLahir, createdAt = user.createdAt,
-                        syncStatus = SyncStatus.SYNCED, lastModifiedAt = user.createdAt
+                        tanggalLahir = user.tanggalLahir, createdAt = user.createdAtMillis,
+                        syncStatus = SyncStatus.SYNCED, lastModifiedAt = user.createdAtMillis
                     )
                 })
             }
@@ -474,7 +474,7 @@ class SyncManager(
                         rujukanId = l.rujukanId, hasilParameter = l.hasilParameter,
                         diagnosa = l.diagnosa, resepObat = l.resepObat,
                         catatanRevisi = l.catatanRevisi, alasanTolak = l.alasanTolak,
-                        rumahSakit = l.rumahSakit, createdAt = l.createdAt,
+                            rumahSakit = l.rumahSakit, createdAt = l.createdAtMillis,
                         updatedAt = l.updatedAt, tanggalSelesai = l.tanggalSelesai,
                         syncStatus = SyncStatus.SYNCED, lastModifiedAt = l.updatedAt
                     )
@@ -544,7 +544,7 @@ class SyncManager(
                         laporanId = r.laporanId, diagnosa = r.diagnosa,
                         hasilRingkasan = r.hasilRingkasan,
                         rumahSakit = r.rumahSakit, waktu = r.waktu,
-                        createdAt = r.createdAt,
+                        createdAt = r.createdAtMillis,
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
@@ -561,7 +561,7 @@ class SyncManager(
                     RujukanEntity(
                         id = r.id, pasienId = r.pasienId,
                         dokterId = r.dokterId, pemeriksaanId = r.pemeriksaanId,
-                        catatan = r.catatan, createdAt = r.createdAt,
+                        catatan = r.catatan, createdAt = r.createdAtMillis,
                         status = r.status,
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()

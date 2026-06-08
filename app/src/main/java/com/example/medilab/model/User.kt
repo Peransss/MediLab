@@ -10,5 +10,12 @@ data class User(
     val fotoProfile: String = "",
     val noRekamMedis: String = "",
     val tanggalLahir: String = "",
-    val createdAt: Long = System.currentTimeMillis()
-)
+    val createdAt: Any = System.currentTimeMillis()
+) {
+    val createdAtMillis: Long get() = when (val ca = createdAt) {
+        is Long -> ca
+        is String -> ca.toLongOrNull() ?: System.currentTimeMillis()
+        is Number -> ca.toLong()
+        else -> System.currentTimeMillis()
+    }
+}
