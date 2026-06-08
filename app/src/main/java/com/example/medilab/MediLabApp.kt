@@ -5,8 +5,11 @@ import com.example.medilab.database.AppDatabase
 import com.example.medilab.database.sync.NetworkMonitor
 import com.example.medilab.database.sync.SyncManager
 import com.example.medilab.database.sync.SyncWorker
+import com.example.medilab.repository.DokterRepository
 import com.example.medilab.repository.LaporanRepository
 import com.example.medilab.repository.NotifikasiRepository
+import com.example.medilab.repository.ObatRepository
+import com.example.medilab.repository.PemeriksaanRepository
 import com.example.medilab.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +36,9 @@ class MediLabApp : Application() {
             userRepository = UserRepository(),
             laporanRepository = LaporanRepository(),
             notifikasiRepository = NotifikasiRepository(),
+            pemeriksaanRepository = PemeriksaanRepository(),
+            obatRepository = ObatRepository(),
+            dokterRepository = DokterRepository(),
             networkMonitor = networkMonitor
         )
         SyncWorker.schedule(this)

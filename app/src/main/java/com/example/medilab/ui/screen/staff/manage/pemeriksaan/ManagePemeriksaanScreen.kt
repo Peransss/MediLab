@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,12 +42,11 @@ import com.example.medilab.ui.util.UiState
 fun ManagePemeriksaanScreen(viewModel: ManageViewModel = viewModel()) {
     val state by viewModel.pemeriksaan.collectAsStateWithLifecycle()
     var showSheet by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { viewModel.loadPemeriksaan() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val s = state) {
             is UiState.Loading -> LoadingState()
-            is UiState.Error -> ErrorState(message = s.message, onRetry = { viewModel.loadPemeriksaan() })
+            is UiState.Error -> ErrorState(message = s.message, onRetry = {})
             is UiState.Empty -> EmptyState(title = "Belum ada master tes")
             is UiState.Success -> LazyColumn(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(Spacing.lg),

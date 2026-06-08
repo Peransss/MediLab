@@ -2,53 +2,66 @@ package com.example.medilab.ui.screen.staff.manage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medilab.MediLabApp
+import com.example.medilab.database.entity.DokterEntity
+import com.example.medilab.database.entity.ObatEntity
+import com.example.medilab.database.entity.PemeriksaanEntity
+import com.example.medilab.database.repository.LocalDokterRepository
+import com.example.medilab.database.repository.LocalObatRepository
+import com.example.medilab.database.repository.LocalPemeriksaanRepository
 import com.example.medilab.model.Dokter
 import com.example.medilab.model.Obat
 import com.example.medilab.model.Pemeriksaan
 import com.example.medilab.model.User
-import com.example.medilab.repository.DokterRepository
-import com.example.medilab.repository.ObatRepository
-import com.example.medilab.repository.PemeriksaanRepository
 import com.example.medilab.repository.UserRepository
 import com.example.medilab.ui.util.UiState
 import com.example.medilab.util.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ManageViewModel : ViewModel() {
+    private val app = MediLabApp.instance
     private val userRepo = UserRepository()
-    private val dokterRepo = DokterRepository()
-    private val pemeriksaanRepo = PemeriksaanRepository()
-    private val obatRepo = ObatRepository()
+    private val localDokterRepo = LocalDokterRepository(app.database, app.syncManager)
+    private val localPemeriksaanRepo = LocalPemeriksaanRepository(app.database, app.syncManager)
+    private val localObatRepo = LocalObatRepository(app.database, app.syncManager)
 
     private val _pasien = MutableStateFlow<UiState<List<User>>>(UiState.Loading)
     val pasien: StateFlow<UiState<List<User>>> = _pasien.asStateFlow()
 
-    private val _dokter = MutableStateFlow<UiState<List<Dokter>>>(UiState.Loading)
-    val dokter: StateFlow<UiState<List<Dokter>>> = _dokter.asStateFlow()
-
     private val _petugas = MutableStateFlow<UiState<List<User>>>(UiState.Loading)
     val petugas: StateFlow<UiState<List<User>>> = _petugas.asStateFlow()
 
-    private val _pemeriksaan = MutableStateFlow<UiState<List<Pemeriksaan>>>(UiState.Loading)
-    val pemeriksaan: StateFlow<UiState<List<Pemeriksaan>>> = _pemeriksaan.asStateFlow()
+    val dokter: StateFlow<UiState<List<Dokter>>> = localDokterRepo.getAll()
+        .map { entities ->
+            if (entities.isEmpty()) UiState.Empty
+            else UiState.Success(entities.map { it.toModel() })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
-    private val _obat = MutableStateFlow<UiState<List<Obat>>>(UiState.Loading)
-    val obat: StateFlow<UiState<List<Obat>>> = _obat.asStateFlow()
+    val pemeriksaan: StateFlow<UiState<List<Pemeriksaan>>> = localPemeriksaanRepo.getAll()
+        .map { entities ->
+            if (entities.isEmpty()) UiState.Empty
+            else UiState.Success(entities.map { it.toModel() })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
+
+    val obat: StateFlow<UiState<List<Obat>>> = localObatRepo.getAll()
+        .map { entities ->
+            if (entities.isEmpty()) UiState.Empty
+            else UiState.Success(entities.map { it.toModel() })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
     fun loadPasien() {
         _pasien.value = UiState.Loading
         userRepo.getUsersByRole(Constants.ROLE_PASIEN) { list ->
             _pasien.value = if (list.isEmpty()) UiState.Empty else UiState.Success(list)
-        }
-    }
-
-    fun loadDokter() {
-        _dokter.value = UiState.Loading
-        dokterRepo.getAll { list ->
-            _dokter.value = if (list.isEmpty()) UiState.Empty else UiState.Success(list)
         }
     }
 
@@ -66,46 +79,54 @@ class ManageViewModel : ViewModel() {
         }
     }
 
-    fun loadPemeriksaan() {
-        _pemeriksaan.value = UiState.Loading
-        pemeriksaanRepo.getAll { list ->
-            _pemeriksaan.value = if (list.isEmpty()) UiState.Empty else UiState.Success(list)
-        }
-    }
-
-    fun loadObat() {
-        _obat.value = UiState.Loading
-        obatRepo.getAll { list ->
-            _obat.value = if (list.isEmpty()) UiState.Empty else UiState.Success(list)
-        }
-    }
-
     fun deletePasien(id: String, onDone: () -> Unit) {
         userRepo.deleteUser(id) { onDone(); loadPasien() }
     }
 
     fun deleteDokter(id: String, onDone: () -> Unit) {
-        dokterRepo.delete(id) { onDone(); loadDokter() }
+        localDokterRepo.delete(id)
+        onDone()
     }
 
     fun deletePemeriksaan(id: String, onDone: () -> Unit) {
-        pemeriksaanRepo.delete(id) { onDone(); loadPemeriksaan() }
+        localPemeriksaanRepo.delete(id)
+        onDone()
     }
 
     fun deleteObat(id: String, onDone: () -> Unit) {
-        obatRepo.delete(id) { onDone(); loadObat() }
+        localObatRepo.delete(id)
+        onDone()
     }
 
     fun saveDokter(d: Dokter, onDone: () -> Unit) {
-        dokterRepo.add(d) { onDone(); loadDokter() }
+        localDokterRepo.upsert(
+            DokterEntity(
+                id = d.id, nama = d.nama, spesialis = d.spesialis,
+                alamat = d.alamat, noHP = d.noHP, email = d.email
+            )
+        )
+        onDone()
     }
 
     fun savePemeriksaan(p: Pemeriksaan, onDone: () -> Unit) {
-        pemeriksaanRepo.add(p) { onDone(); loadPemeriksaan() }
+        localPemeriksaanRepo.upsert(
+            PemeriksaanEntity(
+                id = p.id, namaPemeriksaan = p.namaPemeriksaan,
+                kategori = p.kategori, deskripsi = p.deskripsi,
+                parameter = p.parameter
+            )
+        )
+        onDone()
     }
 
     fun saveObat(o: Obat, onDone: () -> Unit) {
-        obatRepo.add(o) { onDone(); loadObat() }
+        localObatRepo.upsert(
+            ObatEntity(
+                id = o.id, namaObat = o.namaObat, bentuk = o.bentuk,
+                dosis = o.dosis, satuan = o.satuan, keterangan = o.keterangan
+            )
+        )
+        onDone()
     }
 
     private val _petugasSaveError = MutableStateFlow<String?>(null)
@@ -132,3 +153,19 @@ class ManageViewModel : ViewModel() {
         _petugasSaveError.value = null
     }
 }
+
+private fun DokterEntity.toModel() = Dokter(
+    id = id, nama = nama, spesialis = spesialis,
+    alamat = alamat, noHP = noHP, email = email
+)
+
+private fun PemeriksaanEntity.toModel() = Pemeriksaan(
+    id = id, namaPemeriksaan = namaPemeriksaan,
+    kategori = kategori, deskripsi = deskripsi,
+    parameter = parameter
+)
+
+private fun ObatEntity.toModel() = Obat(
+    id = id, namaObat = namaObat, bentuk = bentuk,
+    dosis = dosis, satuan = satuan, keterangan = keterangan
+)
