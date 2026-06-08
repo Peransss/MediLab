@@ -73,6 +73,9 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
+    // WorkManager
+    implementation(libs.androidx.work.runtime)
+
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
     androidTestImplementation(libs.androidx.espresso.core)
