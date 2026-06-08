@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -81,7 +83,7 @@ fun StaffProfileScreen(
                 is UiState.Success -> {
                     val user = s.data
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+                        modifier = Modifier.fillMaxSize().padding(Spacing.lg).verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
                         HeroCard(

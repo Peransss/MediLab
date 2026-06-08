@@ -16,6 +16,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class PatientHomeData(
@@ -49,34 +51,39 @@ class PatientHomeViewModel : ViewModel() {
             return
         }
         loadJob = viewModelScope.launch {
-            localUserRepo.getById(uid).collect { user ->
-                if (user == null) return@collect
-                launch {
-                    localLaporanRepo.getByPasienId(uid).collect { laporanList ->
-                        val sorted = laporanList.sortedByDescending { it.createdAt }
-                        val selesai = laporanList.count { it.status == Constants.STATUS_SELESAI }
-                        val menunggu = laporanList.count {
-                            it.status != Constants.STATUS_SELESAI &&
-                            it.status != Constants.STATUS_BATAL &&
-                            it.status != Constants.STATUS_DITOLAK
-                        }
-                        val total = laporanList.size
-                        launch {
-                            localNotifikasiRepo.getByUserId(uid).collect { notifList ->
-                                _uiState.value = UiState.Success(
-                                    PatientHomeData(
-                                        user = user,
-                                        latestLaporan = sorted.firstOrNull(),
-                                        recentLaporan = sorted.take(3),
-                                        notifikasi = notifList.take(5),
-                                        pemeriksaanSelesai = selesai,
-                                        menungguHasil = menunggu,
-                                        totalRiwayat = total
-                                    )
-                                )
-                            }
-                        }
+            var userEntity = localUserRepo.getById(uid).first()
+            if (userEntity == null) {
+                app.syncManager.pullRemoteChanges()
+                userEntity = localUserRepo.getById(uid).first()
+            }
+            if (userEntity == null) {
+                _uiState.value = UiState.Error("Gagal memuat user")
+                return@launch
+            }
+            launch {
+                combine(
+                    localLaporanRepo.getByPasienId(uid),
+                    localNotifikasiRepo.getByUserId(uid)
+                ) { laporanList, notifList ->
+                    val sorted = laporanList.sortedByDescending { it.createdAt }
+                    val selesai = laporanList.count { it.status == Constants.STATUS_SELESAI }
+                    val menunggu = laporanList.count {
+                        it.status != Constants.STATUS_SELESAI &&
+                        it.status != Constants.STATUS_BATAL &&
+                        it.status != Constants.STATUS_DITOLAK
                     }
+                    val total = laporanList.size
+                    PatientHomeData(
+                        user = userEntity,
+                        latestLaporan = sorted.firstOrNull(),
+                        recentLaporan = sorted.take(3),
+                        notifikasi = notifList.take(5),
+                        pemeriksaanSelesai = selesai,
+                        menungguHasil = menunggu,
+                        totalRiwayat = total
+                    )
+                }.collect { data ->
+                    _uiState.value = UiState.Success(data)
                 }
             }
         }

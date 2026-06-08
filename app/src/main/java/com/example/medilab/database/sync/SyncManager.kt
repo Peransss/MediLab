@@ -28,6 +28,7 @@ import com.example.medilab.repository.PemeriksaanRepository
 import com.example.medilab.repository.RekamMedisRepository
 import com.example.medilab.repository.RujukanRepository
 import com.example.medilab.repository.UserRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -387,6 +388,7 @@ class SyncManager(
     }
 
     private suspend fun pullUpdatedUsers() {
+        val deferred = CompletableDeferred<Unit>()
         userRepository.getAllUsers { users ->
             scope.launch {
                 val entities = users.map { user ->
@@ -406,11 +408,14 @@ class SyncManager(
                     )
                 }
                 database.userDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedLaporans() {
+        val deferred = CompletableDeferred<Unit>()
         laporanRepository.getAll { laporans ->
             scope.launch {
                 val entities = laporans.map { l ->
@@ -427,11 +432,14 @@ class SyncManager(
                     )
                 }
                 database.laporanDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedPemeriksaans() {
+        val deferred = CompletableDeferred<Unit>()
         pemeriksaanRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { p ->
@@ -444,11 +452,14 @@ class SyncManager(
                     )
                 }
                 database.pemeriksaanDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedObats() {
+        val deferred = CompletableDeferred<Unit>()
         obatRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { o ->
@@ -461,11 +472,14 @@ class SyncManager(
                     )
                 }
                 database.obatDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedDokters() {
+        val deferred = CompletableDeferred<Unit>()
         dokterRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { d ->
@@ -478,11 +492,14 @@ class SyncManager(
                     )
                 }
                 database.dokterDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedRekamMedis() {
+        val deferred = CompletableDeferred<Unit>()
         rekamMedisRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { r ->
@@ -497,11 +514,14 @@ class SyncManager(
                     )
                 }
                 database.rekamMedisDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedRujukans() {
+        val deferred = CompletableDeferred<Unit>()
         rujukanRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { r ->
@@ -515,11 +535,14 @@ class SyncManager(
                     )
                 }
                 database.rujukanDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 
     private suspend fun pullUpdatedAuditLogs() {
+        val deferred = CompletableDeferred<Unit>()
         auditLogRepository.getAll { items ->
             scope.launch {
                 val entities = items.map { a ->
@@ -533,7 +556,9 @@ class SyncManager(
                     )
                 }
                 database.auditLogDao().upsertAll(entities)
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
     }
 }
