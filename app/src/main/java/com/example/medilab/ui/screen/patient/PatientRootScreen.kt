@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,8 +25,7 @@ import com.example.medilab.ui.screen.patient.riwayat.PatientRiwayatScreen
 import com.example.medilab.ui.theme.DarkModeViewModel
 
 @Composable
-fun PatientRootScreen(rootNavController: NavHostController) {
-    val darkModeViewModel: DarkModeViewModel = viewModel()
+fun PatientRootScreen(rootNavController: NavHostController, darkModeViewModel: DarkModeViewModel) {
     val isDark by darkModeViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
@@ -58,7 +56,8 @@ fun PatientRootScreen(rootNavController: NavHostController) {
                 PatientHomeScreen(
                     onLaporanClick = { id -> rootNavController.navigate(Route.LaporanDetail.build(id)) },
                     onNotificationClick = { navController.navigate(Route.PatientNotifikasi.path) },
-                    onProfileClick = { navController.navigate(Route.PatientProfile.path) }
+                    onProfileClick = { navController.navigate(Route.PatientProfile.path) },
+                    onSeeAllLaporanClick = { navController.navigate(Route.PatientHasil.path) }
                 )
             }
             composable(Route.PatientHasil.path) {

@@ -61,7 +61,7 @@ fun StaffLaporanDetailScreen(
                                 MediLabButton(
                                     text = action.label,
                                     onClick = { viewModel.updateStatus(laporanId, action.newStatus, userRole) {} },
-                                    variant = if (action.isPrimary) MediLabButtonVariant.FILLED else MediLabButtonVariant.OUTLINED,
+                                    variant = if (action.isPrimary) MediLabButtonVariant.CTA else MediLabButtonVariant.OUTLINED,
                                     fullWidth = false
                                 )
                             }

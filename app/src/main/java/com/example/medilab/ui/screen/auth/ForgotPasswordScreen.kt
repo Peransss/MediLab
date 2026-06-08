@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -18,17 +19,25 @@ import com.example.medilab.ui.component.MediLabButton
 import com.example.medilab.ui.component.MediLabButtonVariant
 import com.example.medilab.ui.component.MediLabTextField
 import com.example.medilab.ui.component.MediLabTopAppBar
+import com.example.medilab.ui.navigation.SharedNavigationViewModel
 import com.example.medilab.ui.theme.Spacing
 
 @Composable
 fun ForgotPasswordScreen(
-    onBack: () -> Unit,
+    sharedNavigationViewModel: SharedNavigationViewModel = viewModel(),
     viewModel: AuthViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(state.successMessage) {
+        if (state.successMessage != null && state.errorMessage == null && !state.isLoading) {
+            sharedNavigationViewModel.popBackStack()
+            viewModel.clearMessages()
+        }
+    }
+
     Scaffold(
-        topBar = { MediLabTopAppBar(title = "Reset Password", onBackClick = onBack) }
+        topBar = { MediLabTopAppBar(title = "Reset Password", onBackClick = { sharedNavigationViewModel.popBackStack() }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -62,14 +71,15 @@ fun ForgotPasswordScreen(
                 Spacer(Modifier.height(Spacing.sm))
                 MediLabButton(
                     text = "Kembali ke Masuk",
-                    onClick = onBack,
+                    onClick = { sharedNavigationViewModel.popBackStack() },
                     variant = MediLabButtonVariant.OUTLINED
                 )
             } ?: run {
                 MediLabButton(
                     text = if (state.isLoading) "Mengirim..." else "Kirim Email Reset",
                     onClick = viewModel::sendPasswordReset,
-                    enabled = !state.isLoading
+                    enabled = !state.isLoading,
+                    variant = MediLabButtonVariant.CTA
                 )
             }
         }

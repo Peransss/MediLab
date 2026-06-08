@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,63 +21,57 @@ import com.example.medilab.ui.screen.SplashScreen
 import com.example.medilab.ui.screen.auth.ForgotPasswordScreen
 import com.example.medilab.ui.screen.auth.LoginScreen
 import com.example.medilab.ui.screen.auth.RegisterScreen
-import com.example.medilab.ui.screen.onboarding.Onboarding1Screen
-import com.example.medilab.ui.screen.onboarding.Onboarding2Screen
-import com.example.medilab.ui.screen.onboarding.Onboarding3Screen
+import com.example.medilab.ui.screen.onboarding.OnboardingRootScreen
 import com.example.medilab.ui.screen.patient.laporan.LaporanDetailScreen
 import com.example.medilab.ui.screen.patient.PatientRootScreen
 import com.example.medilab.ui.screen.staff.StaffRootScreen
 import com.example.medilab.ui.screen.staff.laporan.StaffLaporanDetailScreen
-import com.example.medilab.util.Constants
+import com.example.medilab.ui.theme.DarkModeViewModel
 
 @Composable
-fun AppNavHost(navController: NavHostController = rememberNavController()) {
+fun AppNavHost(
+    navController: NavHostController = rememberNavController(),
+    sharedNavigationViewModel: SharedNavigationViewModel = viewModel(),
+    darkModeViewModel: DarkModeViewModel = viewModel()
+) {
+    LaunchedEffect(Unit) {
+        sharedNavigationViewModel.navigationEvents.collect { event ->
+            when (event) {
+                is NavigationEvent.NavigateTo -> {
+                    navController.navigate(event.route) {
+                        event.popUpTo?.let { popUpTo(it) { inclusive = event.inclusive } }
+                        launchSingleTop = event.singleTop
+                    }
+                }
+                is NavigationEvent.PopBackStack -> navController.popBackStack()
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Route.Splash.path
     ) {
         composable(Route.Splash.path) {
-            SplashScreen(onNavigate = { route -> navController.navigate(route) })
+            SplashScreen(sharedNavigationViewModel = sharedNavigationViewModel)
         }
 
         composable(Route.Onboarding1.path) {
-            Onboarding1Screen(
-                onNext = { navController.navigate(Route.Onboarding2.path) },
-                onSkip = { navController.navigate(Route.Login.path) }
-            )
-        }
-        composable(Route.Onboarding2.path) {
-            Onboarding2Screen(
-                onNext = { navController.navigate(Route.Onboarding3.path) },
-                onSkip = { navController.navigate(Route.Login.path) }
-            )
-        }
-        composable(Route.Onboarding3.path) {
-            Onboarding3Screen(
-                onNext = { navController.navigate(Route.Login.path) },
-                onSkip = { navController.navigate(Route.Login.path) }
-            )
+            OnboardingRootScreen(sharedNavigationViewModel = sharedNavigationViewModel)
         }
 
         composable(Route.Login.path) {
-            LoginScreen(
-                onLoginSuccess = { role -> navigateByRole(navController, role) },
-                onRegisterClick = { navController.navigate(Route.Register.path) },
-                onForgotClick = { navController.navigate(Route.ForgotPassword.path) }
-            )
+            LoginScreen(sharedNavigationViewModel = sharedNavigationViewModel)
         }
         composable(Route.Register.path) {
-            RegisterScreen(
-                onRegisterSuccess = { navController.popBackStack() },
-                onBack = { navController.popBackStack() }
-            )
+            RegisterScreen(sharedNavigationViewModel = sharedNavigationViewModel)
         }
         composable(Route.ForgotPassword.path) {
-            ForgotPasswordScreen(onBack = { navController.popBackStack() })
+            ForgotPasswordScreen(sharedNavigationViewModel = sharedNavigationViewModel)
         }
 
         composable(Route.StaffRoot.path) {
-            StaffRootScreen(rootNavController = navController)
+            StaffRootScreen(rootNavController = navController, darkModeViewModel = darkModeViewModel)
         }
         composable(
             route = Route.StaffLaporanDetail.path,
@@ -90,7 +85,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Route.PatientRoot.path) {
-            PatientRootScreen(rootNavController = navController)
+            PatientRootScreen(rootNavController = navController, darkModeViewModel = darkModeViewModel)
         }
         composable(
             route = Route.LaporanDetail.path,
@@ -138,16 +133,5 @@ private fun StaffLaporanDetailRoute(
             onBack = onBack,
             userRole = userRole ?: ""
         )
-    }
-}
-
-private fun navigateByRole(navController: NavHostController, role: String) {
-    val target = when (role) {
-        Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
-        Constants.ROLE_PASIEN -> Route.PatientRoot.path
-        else -> Route.Login.path
-    }
-    navController.navigate(target) {
-        popUpTo(0) { inclusive = true }
     }
 }

@@ -174,7 +174,7 @@ private fun ProfileMenuItem(icon: ImageVector, label: String, onClick: () -> Uni
             modifier = Modifier.fillMaxWidth().padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.size(Spacing.md))
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Icon(
@@ -195,7 +195,7 @@ private fun DarkModeToggleRow(enabled: Boolean, onChange: (Boolean) -> Unit) {
         ) {
             Icon(
                 Icons.Default.DarkMode,
-                contentDescription = null,
+                contentDescription = "Mode Gelap",
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.size(Spacing.md))
@@ -238,7 +238,7 @@ private fun EditProfileBottomSheet(
                 maxLines = 3
             )
             Spacer(Modifier.height(Spacing.lg))
-            MediLabButton(text = "Simpan", onClick = { onSave(nama, noHP, alamat) })
+            MediLabButton(text = "Simpan", onClick = { onSave(nama, noHP, alamat) }, variant = MediLabButtonVariant.CTA)
         }
     }
 }

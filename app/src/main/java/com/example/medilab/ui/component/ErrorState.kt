@@ -30,7 +30,7 @@ fun ErrorState(
     ) {
         Icon(
             Icons.Default.Warning,
-            contentDescription = null,
+            contentDescription = "Peringatan",
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(48.dp)
         )

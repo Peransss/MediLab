@@ -36,7 +36,7 @@ fun StatCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (icon != null) {
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             }
             Text(
                 text = value,

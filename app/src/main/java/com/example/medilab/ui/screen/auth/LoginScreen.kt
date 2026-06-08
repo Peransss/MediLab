@@ -8,11 +8,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,16 +32,29 @@ import com.example.medilab.ui.component.MediLabButtonVariant
 import com.example.medilab.ui.component.MediLabPasswordField
 import com.example.medilab.ui.component.MediLabTextField
 import com.example.medilab.ui.illustration.DoctorIllustration
+import com.example.medilab.ui.navigation.Route
+import com.example.medilab.ui.navigation.SharedNavigationViewModel
 import com.example.medilab.ui.theme.Spacing
+import com.example.medilab.util.Constants
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (role: String) -> Unit,
-    onRegisterClick: () -> Unit,
-    onForgotClick: () -> Unit,
+    sharedNavigationViewModel: SharedNavigationViewModel = viewModel(),
     viewModel: AuthViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.isLoggedIn, state.userRole) {
+        if (state.isLoggedIn && state.userRole != null) {
+            val target = when (state.userRole) {
+                Constants.ROLE_ADMIN, Constants.ROLE_PETUGAS, Constants.ROLE_DOKTER -> Route.StaffRoot.path
+                Constants.ROLE_PASIEN -> Route.PatientRoot.path
+                else -> Route.Login.path
+            }
+            sharedNavigationViewModel.navigateTo(target, popUpTo = "0", inclusive = true)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -48,12 +69,12 @@ fun LoginScreen(
         }
         Spacer(Modifier.height(Spacing.xl))
         Text(
-            text = "Masuk ke MediLab",
-            style = MaterialTheme.typography.headlineMedium,
+            text = "Selamat Datang Kembali 👋",
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = "Kelola atau akses hasil lab Anda",
+            text = "Masuk untuk melanjutkan",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Spacing.xs)
@@ -63,6 +84,13 @@ fun LoginScreen(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
             label = "Email",
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Email,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
             keyboardType = KeyboardType.Email,
             isError = state.emailError != null,
             errorMessage = state.emailError
@@ -72,20 +100,31 @@ fun LoginScreen(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             label = "Password",
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            passwordVisible = passwordVisible,
+            onVisibilityToggle = { passwordVisible = !passwordVisible },
             isError = state.passwordError != null,
             errorMessage = state.passwordError
         )
         TextButton(
-            onClick = onForgotClick,
+            onClick = { sharedNavigationViewModel.navigateTo(Route.ForgotPassword.path) },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Lupa password?", style = MaterialTheme.typography.labelMedium)
         }
         Spacer(Modifier.height(Spacing.lg))
         MediLabButton(
-            text = if (state.isLoading) "Memuat..." else "Masuk",
-            onClick = { viewModel.login(onLoginSuccess) },
-            enabled = !state.isLoading
+            text = "Masuk",
+            onClick = { viewModel.login() },
+            isLoading = state.isLoading,
+            enabled = !state.isLoading,
+            variant = MediLabButtonVariant.CTA
         )
         state.errorMessage?.let { msg ->
             Spacer(Modifier.height(Spacing.sm))
@@ -99,7 +138,7 @@ fun LoginScreen(
         )
         MediLabButton(
             text = "Daftar sebagai Pasien",
-            onClick = onRegisterClick,
+            onClick = { sharedNavigationViewModel.navigateTo(Route.Register.path) },
             variant = MediLabButtonVariant.OUTLINED
         )
     }

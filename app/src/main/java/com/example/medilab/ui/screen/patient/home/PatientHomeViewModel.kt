@@ -10,6 +10,7 @@ import com.example.medilab.repository.LaporanRepository
 import com.example.medilab.repository.NotifikasiRepository
 import com.example.medilab.repository.UserRepository
 import com.example.medilab.ui.util.UiState
+import com.example.medilab.util.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +20,10 @@ data class PatientHomeData(
     val user: User,
     val latestLaporan: Laporan?,
     val recentLaporan: List<Laporan>,
-    val notifikasi: List<Notifikasi>
+    val notifikasi: List<Notifikasi>,
+    val pemeriksaanSelesai: Int,
+    val menungguHasil: Int,
+    val totalRiwayat: Int
 )
 
 class PatientHomeViewModel : ViewModel() {
@@ -46,13 +50,19 @@ class PatientHomeViewModel : ViewModel() {
                 }
                 laporanRepo.getByPasienId(uid) { laporanList ->
                     val sorted = laporanList.sortedByDescending { it.createdAt }
+                    val selesai = laporanList.count { it.status == Constants.STATUS_SELESAI }
+                    val menunggu = laporanList.count { it.status != Constants.STATUS_SELESAI && it.status != Constants.STATUS_BATAL && it.status != Constants.STATUS_DITOLAK }
+                    val total = laporanList.size
                     notifikasiRepo.getByUserId(uid) { notifList ->
                         _uiState.value = UiState.Success(
                             PatientHomeData(
                                 user = user,
                                 latestLaporan = sorted.firstOrNull(),
                                 recentLaporan = sorted.take(3),
-                                notifikasi = notifList.take(5)
+                                notifikasi = notifList.take(5),
+                                pemeriksaanSelesai = selesai,
+                                menungguHasil = menunggu,
+                                totalRiwayat = total
                             )
                         )
                     }

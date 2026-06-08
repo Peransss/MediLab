@@ -1,5 +1,7 @@
 package com.example.medilab.ui.screen.patient.profile
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,17 +13,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -36,13 +42,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medilab.ui.component.EmptyState
 import com.example.medilab.ui.component.ErrorState
-import com.example.medilab.ui.component.HeroCard
 import com.example.medilab.ui.component.LoadingState
 import com.example.medilab.ui.component.MediLabButton
 import com.example.medilab.ui.component.MediLabButtonVariant
@@ -52,6 +59,8 @@ import com.example.medilab.ui.component.MediLabTextField
 import com.example.medilab.ui.component.MediLabTopAppBar
 import com.example.medilab.ui.theme.Spacing
 import com.example.medilab.ui.util.UiState
+import com.example.medilab.util.DateUtils
+import java.util.Date
 
 @Composable
 fun PatientProfileScreen(
@@ -64,6 +73,9 @@ fun PatientProfileScreen(
     var showEdit by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
+    var showTentang by remember { mutableStateOf(false) }
+    var showBantuan by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -78,32 +90,86 @@ fun PatientProfileScreen(
                 is UiState.Success -> {
                     val user = s.data
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(Spacing.lg),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
-                        HeroCard(title = user.nama.ifBlank { "User" }, subtitle = "${user.role.uppercase()} • ${user.id}") {
-                            Box(
-                                modifier = Modifier.size(80.dp).clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .padding(Spacing.md),
-                                contentAlignment = Alignment.Center
+                        // Profile Header Card
+                        MediLabCard {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = user.nama.firstOrNull()?.uppercase() ?: "U",
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = user.nama.firstOrNull()?.uppercase() ?: "U",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Spacer(Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = user.nama.ifBlank { "User" },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "PASIEN",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier
+                                                .background(
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    shape = CircleShape
+                                                )
+                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = "Member sejak ${DateUtils.formatDateOnly(Date(user.createdAt))}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
+
+                        // Settings List
                         ProfileMenuItem(icon = Icons.Default.Edit, label = "Edit Profile") { showEdit = true }
                         ProfileMenuItem(icon = Icons.Default.Lock, label = "Ganti Password") { showPassword = true }
                         DarkModeToggleRow(enabled = isDark, onChange = { onToggleDark() })
+                        ProfileMenuItem(icon = Icons.Default.Info, label = "Tentang Aplikasi") { showTentang = true }
+                        ProfileMenuItem(icon = Icons.Default.Help, label = "Bantuan") { showBantuan = true }
+                        
                         Spacer(Modifier.height(Spacing.lg))
-                        MediLabButton(
-                            text = "Logout",
+                        
+                        // Redesigned Logout Button
+                        OutlinedButton(
                             onClick = { showLogoutConfirm = true },
-                            variant = MediLabButtonVariant.OUTLINED
-                        )
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text("Logout", style = MaterialTheme.typography.labelLarge)
+                        }
                     }
                 }
             }
@@ -149,16 +215,40 @@ fun PatientProfileScreen(
             }
         )
     }
+
+    if (showTentang) {
+        AlertDialog(
+            onDismissRequest = { showTentang = false },
+            title = { Text("Tentang Aplikasi") },
+            text = { Text("MediLab App v1.0.0\nSistem informasi laboratorium medis yang modern dan mudah digunakan.\n\n© 2026 MediLab.") },
+            confirmButton = {
+                TextButton(onClick = { showTentang = false }) { Text("Tutup") }
+            }
+        )
+    }
+
+    if (showBantuan) {
+        AlertDialog(
+            onDismissRequest = { showBantuan = false },
+            title = { Text("Bantuan") },
+            text = { Text("Hubungi support kami melalui email di support@medilab.com atau hubungi Call Center kami di (021) 1234567.") },
+            confirmButton = {
+                TextButton(onClick = { showBantuan = false }) { Text("Mengerti") }
+            }
+        )
+    }
 }
 
 @Composable
 private fun ProfileMenuItem(icon: ImageVector, label: String, onClick: () -> Unit) {
     MediLabCard(onClick = onClick) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.size(Spacing.md))
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -170,10 +260,12 @@ private fun ProfileMenuItem(icon: ImageVector, label: String, onClick: () -> Uni
 private fun DarkModeToggleRow(enabled: Boolean, onChange: (Boolean) -> Unit) {
     MediLabCard {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(Icons.Default.DarkMode, contentDescription = "Mode Gelap", tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.size(Spacing.md))
             Text("Dark Mode", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Switch(checked = enabled, onCheckedChange = onChange)
@@ -203,7 +295,7 @@ private fun EditProfileBottomSheet(
             Spacer(Modifier.height(Spacing.md))
             MediLabTextField(value = alamat, onValueChange = { alamat = it }, label = "Alamat", singleLine = false, maxLines = 3)
             Spacer(Modifier.height(Spacing.lg))
-            MediLabButton(text = "Simpan", onClick = { onSave(nama, noHP, alamat) })
+            MediLabButton(text = "Simpan", onClick = { onSave(nama, noHP, alamat) }, variant = MediLabButtonVariant.CTA)
         }
     }
 }

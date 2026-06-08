@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,8 +24,7 @@ import com.example.medilab.ui.screen.staff.profile.StaffProfileScreen
 import com.example.medilab.ui.theme.DarkModeViewModel
 
 @Composable
-fun StaffRootScreen(rootNavController: NavHostController) {
-    val darkModeViewModel: DarkModeViewModel = viewModel()
+fun StaffRootScreen(rootNavController: NavHostController, darkModeViewModel: DarkModeViewModel) {
     val isDark by darkModeViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
