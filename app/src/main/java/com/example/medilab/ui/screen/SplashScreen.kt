@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medilab.repository.AuthRepository
 import com.example.medilab.repository.UserRepository
-import com.example.medilab.ui.illustration.EmptyLabIllustration
+import com.example.medilab.ui.illustration.MediLabLogo
 import com.example.medilab.ui.navigation.Route
 import com.example.medilab.ui.navigation.SharedNavigationViewModel
 import com.example.medilab.util.Constants
@@ -67,24 +67,14 @@ fun SplashScreen(sharedNavigationViewModel: SharedNavigationViewModel = viewMode
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
-    ) {
-        // Center content
-        Column(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(160.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+            // Center content
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                EmptyLabIllustration(modifier = Modifier.size(100.dp))
-            }
+                MediLabLogo(modifier = Modifier.size(160.dp))
             
             Spacer(modifier = Modifier.height(24.dp))
             

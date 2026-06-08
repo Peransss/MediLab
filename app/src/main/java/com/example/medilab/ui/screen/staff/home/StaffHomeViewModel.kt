@@ -58,8 +58,11 @@ class StaffHomeViewModel : ViewModel() {
                 userEntity = localUserRepo.getById(uid).first()
             }
             if (userEntity == null) {
-                _uiState.value = UiState.Error("Gagal memuat user")
-                return@launch
+                userEntity = app.syncManager.pullUserById(uid)
+                if (userEntity == null) {
+                    _uiState.value = UiState.Error("Gagal memuat user")
+                    return@launch
+                }
             }
             val role = userEntity.role
             val all = localLaporanRepo.getAll().first()

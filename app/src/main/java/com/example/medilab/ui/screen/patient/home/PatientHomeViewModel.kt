@@ -57,8 +57,11 @@ class PatientHomeViewModel : ViewModel() {
                 userEntity = localUserRepo.getById(uid).first()
             }
             if (userEntity == null) {
-                _uiState.value = UiState.Error("Gagal memuat user")
-                return@launch
+                userEntity = app.syncManager.pullUserById(uid)
+                if (userEntity == null) {
+                    _uiState.value = UiState.Error("Gagal memuat user")
+                    return@launch
+                }
             }
             launch {
                 combine(

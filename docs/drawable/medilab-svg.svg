@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Gradasi Warna Ungu Modern (Tech-Purple) -->
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Ikon Aplikasi (Rasio 1:1 Berujung Bulat / Squircle) -->
+  <rect width="512" height="512" rx="128" fill="url(#purpleGrad)"/>
+  
+  <!-- Gelembung Lab Eksperimen (Efek Minimalis di Luar Labu) -->
+  <circle cx="256" cy="90" r="10" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="285" cy="65" r="6" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="235" cy="110" r="5" fill="#FFFFFF" opacity="0.4"/>
+
+  <!-- Ikon Utama: Labu Erlenmeyer Medis -->
+  <g fill="#FFFFFF">
+    <!-- Bibir/Tutup Atas Labu -->
+    <rect x="226" y="130" width="60" height="12" rx="6"/>
+    
+    <!-- Badan Labu Laboratorium -->
+    <path d="M 236 142 
+             H 276 
+             V 210 
+             L 358 335 
+             A 22 22 0 0 1 339 368 
+             H 173 
+             A 22 22 0 0 1 154 335 
+             L 236 210 
+             Z" />
+  </g>
+
+  <!-- Lambang Plus Medis di Dalam Labu (Efek Dingin/Transparan) -->
+  <path d="M 244 255 H 268 V 279 H 292 V 303 H 268 V 327 H 244 V 303 H 220 V 279 H 244 Z" fill="#522CA6"/>
+</svg>

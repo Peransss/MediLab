@@ -28,12 +28,16 @@ import com.example.medilab.repository.PemeriksaanRepository
 import com.example.medilab.repository.RekamMedisRepository
 import com.example.medilab.repository.RujukanRepository
 import com.example.medilab.repository.UserRepository
+import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.sync.withLock
 
 class SyncManager(
@@ -48,8 +52,10 @@ class SyncManager(
     private val rujukanRepository: RujukanRepository,
     private val auditLogRepository: AuditLogRepository,
     private val networkMonitor: NetworkMonitor,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
+    private val exceptionHandler = CoroutineExceptionHandler { _, e -> Log.e("SyncManager", "Unhandled error", e) }
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
+
     @Volatile
     var lastSyncTimestamp: Long = 0L
     private val syncMutex = Mutex()
@@ -387,38 +393,80 @@ class SyncManager(
         }
     }
 
-    private suspend fun pullUpdatedUsers() {
+    private suspend fun <T> syncCollection(
+        query: ((List<T>) -> Unit) -> Unit,
+        upsert: suspend (List<T>) -> Unit
+    ) {
         val deferred = CompletableDeferred<Unit>()
-        userRepository.getAllUsers { users ->
+        query { items ->
             scope.launch {
-                val entities = users.map { user ->
-                    UserEntity(
-                        id = user.id,
-                        nama = user.nama,
-                        email = user.email,
-                        role = user.role,
-                        noHP = user.noHP,
-                        alamat = user.alamat,
-                        fotoProfile = user.fotoProfile,
-                        noRekamMedis = user.noRekamMedis,
-                        tanggalLahir = user.tanggalLahir,
-                        createdAt = user.createdAt,
-                        syncStatus = SyncStatus.SYNCED,
-                        lastModifiedAt = user.createdAt
-                    )
+                try {
+                    upsert(items)
+                } catch (e: Exception) {
+                    Log.e("SyncManager", "Sync error", e)
+                } finally {
+                    deferred.complete(Unit)
                 }
-                database.userDao().upsertAll(entities)
-                deferred.complete(Unit)
             }
         }
-        deferred.await()
+        try {
+            withTimeout(30_000L) { deferred.await() }
+        } catch (_: TimeoutCancellationException) {
+            Log.e("SyncManager", "Sync timed out after 30s")
+        }
+    }
+
+    suspend fun pullUserById(uid: String): UserEntity? {
+        val deferred = CompletableDeferred<UserEntity?>()
+        userRepository.getUser(uid) { user ->
+            val entity = user?.let {
+                UserEntity(
+                    id = it.id, nama = it.nama, email = it.email,
+                    role = it.role, noHP = it.noHP, alamat = it.alamat,
+                    fotoProfile = it.fotoProfile, noRekamMedis = it.noRekamMedis,
+                    tanggalLahir = it.tanggalLahir, createdAt = it.createdAt,
+                    syncStatus = SyncStatus.SYNCED, lastModifiedAt = it.createdAt
+                )
+            }
+            if (entity != null) {
+                scope.launch {
+                    database.userDao().upsert(entity)
+                    deferred.complete(entity)
+                }
+            } else {
+                deferred.complete(null)
+            }
+        }
+        return try {
+            withTimeout(15_000L) { deferred.await() }
+        } catch (_: TimeoutCancellationException) {
+            Log.e("SyncManager", "pullUserById timed out for $uid")
+            null
+        }
+    }
+
+    private suspend fun pullUpdatedUsers() {
+        syncCollection(
+            query = { cb -> userRepository.getAllUsers(cb) },
+            upsert = { users ->
+                database.userDao().upsertAll(users.map { user ->
+                    UserEntity(
+                        id = user.id, nama = user.nama, email = user.email,
+                        role = user.role, noHP = user.noHP, alamat = user.alamat,
+                        fotoProfile = user.fotoProfile, noRekamMedis = user.noRekamMedis,
+                        tanggalLahir = user.tanggalLahir, createdAt = user.createdAt,
+                        syncStatus = SyncStatus.SYNCED, lastModifiedAt = user.createdAt
+                    )
+                })
+            }
+        )
     }
 
     private suspend fun pullUpdatedLaporans() {
-        val deferred = CompletableDeferred<Unit>()
-        laporanRepository.getAll { laporans ->
-            scope.launch {
-                val entities = laporans.map { l ->
+        syncCollection(
+            query = { cb -> laporanRepository.getAll(cb) },
+            upsert = { laporans ->
+                database.laporanDao().upsertAll(laporans.map { l ->
                     LaporanEntity(
                         id = l.id, status = l.status, pasienId = l.pasienId,
                         dokterId = l.dokterId, petugasId = l.petugasId,
@@ -430,19 +478,16 @@ class SyncManager(
                         updatedAt = l.updatedAt, tanggalSelesai = l.tanggalSelesai,
                         syncStatus = SyncStatus.SYNCED, lastModifiedAt = l.updatedAt
                     )
-                }
-                database.laporanDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedPemeriksaans() {
-        val deferred = CompletableDeferred<Unit>()
-        pemeriksaanRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { p ->
+        syncCollection(
+            query = { cb -> pemeriksaanRepository.getAll(cb) },
+            upsert = { items ->
+                database.pemeriksaanDao().upsertAll(items.map { p ->
                     PemeriksaanEntity(
                         id = p.id, namaPemeriksaan = p.namaPemeriksaan,
                         kategori = p.kategori, deskripsi = p.deskripsi,
@@ -450,19 +495,16 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.pemeriksaanDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedObats() {
-        val deferred = CompletableDeferred<Unit>()
-        obatRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { o ->
+        syncCollection(
+            query = { cb -> obatRepository.getAll(cb) },
+            upsert = { items ->
+                database.obatDao().upsertAll(items.map { o ->
                     ObatEntity(
                         id = o.id, namaObat = o.namaObat,
                         bentuk = o.bentuk, dosis = o.dosis,
@@ -470,19 +512,16 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.obatDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedDokters() {
-        val deferred = CompletableDeferred<Unit>()
-        dokterRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { d ->
+        syncCollection(
+            query = { cb -> dokterRepository.getAll(cb) },
+            upsert = { items ->
+                database.dokterDao().upsertAll(items.map { d ->
                     DokterEntity(
                         id = d.id, nama = d.nama,
                         spesialis = d.spesialis, alamat = d.alamat,
@@ -490,19 +529,16 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.dokterDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedRekamMedis() {
-        val deferred = CompletableDeferred<Unit>()
-        rekamMedisRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { r ->
+        syncCollection(
+            query = { cb -> rekamMedisRepository.getAll(cb) },
+            upsert = { items ->
+                database.rekamMedisDao().upsertAll(items.map { r ->
                     RekamMedisEntity(
                         id = r.id, pasienId = r.pasienId,
                         laporanId = r.laporanId, diagnosa = r.diagnosa,
@@ -512,19 +548,16 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.rekamMedisDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedRujukans() {
-        val deferred = CompletableDeferred<Unit>()
-        rujukanRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { r ->
+        syncCollection(
+            query = { cb -> rujukanRepository.getAll(cb) },
+            upsert = { items ->
+                database.rujukanDao().upsertAll(items.map { r ->
                     RujukanEntity(
                         id = r.id, pasienId = r.pasienId,
                         dokterId = r.dokterId, pemeriksaanId = r.pemeriksaanId,
@@ -533,19 +566,16 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.rujukanDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 
     private suspend fun pullUpdatedAuditLogs() {
-        val deferred = CompletableDeferred<Unit>()
-        auditLogRepository.getAll { items ->
-            scope.launch {
-                val entities = items.map { a ->
+        syncCollection(
+            query = { cb -> auditLogRepository.getAll(cb) },
+            upsert = { items ->
+                database.auditLogDao().upsertAll(items.map { a ->
                     AuditLogEntity(
                         id = a.id, userId = a.userId,
                         aksi = a.aksi, targetId = a.targetId,
@@ -554,11 +584,8 @@ class SyncManager(
                         syncStatus = SyncStatus.SYNCED,
                         lastModifiedAt = System.currentTimeMillis()
                     )
-                }
-                database.auditLogDao().upsertAll(entities)
-                deferred.complete(Unit)
+                })
             }
-        }
-        deferred.await()
+        )
     }
 }
