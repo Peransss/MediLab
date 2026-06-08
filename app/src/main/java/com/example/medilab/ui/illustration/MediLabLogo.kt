@@ -9,7 +9,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 
 @Composable
@@ -20,6 +19,7 @@ fun MediLabLogo(modifier: Modifier = Modifier) {
     val darkPurple = Color(0xFF522CA6)
 
     Canvas(modifier = modifier) {
+        if (size.minDimension <= 0f) return@Canvas
         val scale = size.minDimension / 512f
         val contentSize = 512f * scale
         val ox = (size.width - contentSize) / 2f
