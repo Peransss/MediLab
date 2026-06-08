@@ -22,6 +22,7 @@ object Constants {
     const val COLLECTION_REKAM_MEDIS = "rekamMedis"
     const val COLLECTION_NOTIFIKASI = "notifikasi"
     const val COLLECTION_OBAT = "obat"
+    const val COLLECTION_ANTRIAN = "antrian"
     const val COLLECTION_AUDIT_LOG = "auditLog"
 
     const val RS_NAMA = "RS MediLab Sehat"
