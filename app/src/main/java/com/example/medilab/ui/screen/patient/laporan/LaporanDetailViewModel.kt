@@ -2,6 +2,8 @@ package com.example.medilab.ui.screen.patient.laporan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medilab.MediLabApp
+import com.example.medilab.database.repository.LocalLaporanRepository
 import com.example.medilab.model.Laporan
 import com.example.medilab.model.User
 import com.example.medilab.repository.LaporanRepository
@@ -10,6 +12,7 @@ import com.example.medilab.ui.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class LaporanDetailData(
@@ -19,28 +22,60 @@ data class LaporanDetailData(
 )
 
 class LaporanDetailViewModel : ViewModel() {
+    private val app by lazy { MediLabApp.instance }
+    private val localLaporanRepo by lazy { LocalLaporanRepository(app.database, app.syncManager) }
     private val laporanRepo = LaporanRepository()
     private val userRepo = UserRepository()
+
     private val _uiState = MutableStateFlow<UiState<LaporanDetailData>>(UiState.Loading)
     val uiState: StateFlow<UiState<LaporanDetailData>> = _uiState.asStateFlow()
 
     fun load(id: String) {
         _uiState.value = UiState.Loading
         viewModelScope.launch {
-            laporanRepo.getById(id) { laporan ->
-                if (laporan == null) {
-                    _uiState.value = UiState.Error("Laporan tidak ditemukan")
-                    return@getById
-                }
-                userRepo.getUser(laporan.pasienId) { pasien ->
-                    if (laporan.dokterId.isBlank()) {
-                        _uiState.value = UiState.Success(LaporanDetailData(laporan, pasien, null))
-                        return@getUser
+            val localEntity = localLaporanRepo.getById(id).first()
+
+            if (localEntity != null) {
+                val laporan = Laporan(
+                    id = localEntity.id,
+                    status = localEntity.status,
+                    pasienId = localEntity.pasienId,
+                    dokterId = localEntity.dokterId,
+                    petugasId = localEntity.petugasId,
+                    adminId = localEntity.adminId,
+                    pemeriksaanId = localEntity.pemeriksaanId,
+                    rujukanId = localEntity.rujukanId,
+                    hasilParameter = localEntity.hasilParameter,
+                    diagnosa = localEntity.diagnosa,
+                    resepObat = localEntity.resepObat,
+                    catatanRevisi = localEntity.catatanRevisi,
+                    alasanTolak = localEntity.alasanTolak,
+                    rumahSakit = localEntity.rumahSakit,
+                    createdAt = localEntity.createdAt,
+                    updatedAt = localEntity.updatedAt,
+                    tanggalSelesai = localEntity.tanggalSelesai
+                )
+                loadUsers(laporan)
+            } else {
+                laporanRepo.getById(id) { laporan ->
+                    if (laporan == null) {
+                        _uiState.value = UiState.Error("Laporan tidak ditemukan")
+                        return@getById
                     }
-                    userRepo.getUser(laporan.dokterId) { dokter ->
-                        _uiState.value = UiState.Success(LaporanDetailData(laporan, pasien, dokter))
-                    }
+                    viewModelScope.launch { loadUsers(laporan) }
                 }
+            }
+        }
+    }
+
+    private suspend fun loadUsers(laporan: Laporan) {
+        userRepo.getUser(laporan.pasienId) { pasien ->
+            if (laporan.dokterId.isBlank()) {
+                _uiState.value = UiState.Success(LaporanDetailData(laporan, pasien, null))
+                return@getUser
+            }
+            userRepo.getUser(laporan.dokterId) { dokter ->
+                _uiState.value = UiState.Success(LaporanDetailData(laporan, pasien, dokter))
             }
         }
     }
